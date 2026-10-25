@@ -287,7 +287,8 @@ def run(argv):
 
     app = QApplication(argv)
     app.setStyle("Fusion")
-    app.setStyleSheet(QSS)
+    from tkpdf.tk_licenza_qt import stile_caselle_globale
+    app.setStyleSheet(QSS + stile_caselle_globale())
     icon = app_icon()
     app.setWindowIcon(icon)
 

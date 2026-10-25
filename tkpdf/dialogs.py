@@ -589,9 +589,23 @@ class AboutDialog(QDialog):
             " padding: 13px 16px; font-weight: 700; }"
             "QPushButton#tkAccento:hover { background: #be123c; }"
         )
-        lay = QVBoxLayout(self)
+        # contenuto in un'area che scorre: su uno schermo basso la finestra non esce dallo schermo
+        from PySide6.QtWidgets import QFrame, QScrollArea
+        self._corpo = QWidget()
+        self._corpo.setObjectName("tkInfoCorpo")
+        self._corpo.setStyleSheet("#tkInfoCorpo { background: #0f172a; }")
+        lay = QVBoxLayout(self._corpo)
         lay.setContentsMargins(16, 16, 16, 16)
         lay.setSpacing(16)
+        self._scorri = QScrollArea()
+        self._scorri.setWidget(self._corpo)
+        self._scorri.setWidgetResizable(True)
+        self._scorri.setFrameShape(QFrame.Shape.NoFrame)
+        self._scorri.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self._scorri.setStyleSheet("QScrollArea { background: #0f172a; }")
+        fuori = QVBoxLayout(self)
+        fuori.setContentsMargins(0, 0, 0, 0)
+        fuori.addWidget(self._scorri)
 
         # icona su quadrato accento, come sul telefono
         testa = QVBoxLayout()
@@ -650,13 +664,29 @@ class AboutDialog(QDialog):
         testo.setObjectName("tkInfoEtichetta")
         testo.setWordWrap(True)
         libero.layout().addWidget(testo)
+        from tkpdf.tk_licenza_qt import stile_casella
+
+        def spiega(t):
+            # spiegazione sempre visibile sotto la casella (al posto del suggerimento su una riga lunghissima)
+            s = QLabel(t)
+            s.setObjectName("tkInfoEtichetta")
+            s.setWordWrap(True)
+            s.setContentsMargins(30, 0, 0, 4)
+            return s
+
         stat = pro.casella_statistiche()
+        stat.setToolTip("")
         libero.layout().addWidget(stat)
+        libero.layout().addWidget(spiega("Una volta al giorno: nome, versione e sistema, con un codice casuale. "
+                                         "Niente file né contenuti."))
         font = QCheckBox("Scarica da Google Fonts i caratteri mancanti")
-        font.setToolTip(webfonts.CONSENT_TEXT)
+        font.setObjectName("tkCasella")
+        font.setStyleSheet(stile_casella("QCheckBox#tkCasella"))
         font.setChecked(webfonts.consent() is True)
         font.toggled.connect(webfonts.set_consent)
         libero.layout().addWidget(font)
+        libero.layout().addWidget(spiega("Solo quando riscrivi un testo con un carattere che manca nel PDF. Google "
+                                         "riceve l'indirizzo IP e il nome del font; senza, si usa un font simile."))
         licenze = QPushButton("Licenze e codice sorgente")
         licenze.setObjectName("tkChiaro")
         licenze.setCursor(Qt.CursorShape.PointingHandCursor)
@@ -678,6 +708,27 @@ class AboutDialog(QDialog):
         chiudi.setCursor(Qt.CursorShape.PointingHandCursor)
         chiudi.clicked.connect(self.accept)
         lay.addWidget(chiudi, alignment=Qt.AlignmentFlag.AlignRight)
+        self._misura()
+
+    LARGHEZZA = 440
+
+    def _misura(self):
+        """Larghezza fissa e altezza calcolata sul testo vero (le etichette che vanno a capo non vengono
+        schiacciate); oltre l'altezza dello schermo il contenuto scorre."""
+        from PySide6.QtGui import QGuiApplication
+        self.setFixedWidth(self.LARGHEZZA)
+        utile = self.LARGHEZZA - self._scorri.verticalScrollBar().sizeHint().width()
+        alto = self._corpo.layout().totalHeightForWidth(utile)
+        if alto <= 0:
+            alto = self._corpo.sizeHint().height()
+        schermo = QGuiApplication.primaryScreen()
+        massimo = (schermo.availableGeometry().height() - 60) if schermo is not None else 900
+        self.resize(self.LARGHEZZA, min(alto + 2, massimo))
+
+    def showEvent(self, ev):
+        super().showEvent(ev)
+        from tkpdf.tk_licenza_qt import centra
+        centra(self)
 
     @staticmethod
     def _scheda(titolo, righe):

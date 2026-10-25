@@ -114,7 +114,8 @@ def main():
     from tkpdf.mainwindow import MainWindow
     from tkpdf.style import QSS
 
-    app.setStyleSheet(QSS)
+    from tkpdf.tk_licenza_qt import stile_caselle_globale
+    app.setStyleSheet(QSS + stile_caselle_globale())
     app.setWindowIcon(app_icon())
     # donazione, benvenuto e consenso alle statistiche (software libero: nessuna funzione bloccata)
     try:
