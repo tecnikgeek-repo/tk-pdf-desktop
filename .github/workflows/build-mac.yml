@@ -1,0 +1,35 @@
+name: Build macOS
+
+# Solo su richiesta (gh workflow run): i minuti Mac costano 10 volte, si costruisce
+# solo quando si pubblica una versione (deciso il 2026-10-11).
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-15
+            arch: arm64
+          - runner: macos-15-intel
+            arch: x86_64
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Build
+        run: bash mac/build_mac.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tk-pdf-mac-${{ matrix.arch }}
+          path: dist/*.dmg
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: selftest-${{ matrix.arch }}
+          path: dist/selftest-*.png
+          if-no-files-found: ignore

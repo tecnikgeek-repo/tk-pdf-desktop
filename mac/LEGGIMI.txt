@@ -1,0 +1,39 @@
+tk-pdf per Mac — installazione
+==============================
+
+1. Trascina «tk-pdf» sulla cartella «Applicazioni».
+2. Apri tk-pdf da Applicazioni (o da Launchpad).
+
+PRIMO AVVIO
+L'app non è firmata con un certificato Apple, quindi al primo avvio macOS può bloccarla
+("impossibile verificare lo sviluppatore" oppure "l'app è danneggiata").
+
+  • Apri Impostazioni di Sistema → Privacy e sicurezza, scorri in basso e premi
+    «Apri comunque» accanto a tk-pdf, poi conferma.
+
+  • In alternativa, da Terminale:
+        xattr -dr com.apple.quarantine "/Applications/TK PDF.app"
+
+Serve farlo una sola volta.
+
+APRIRE I PDF CON tk-pdf
+Tasto destro su un PDF → Ottieni informazioni → «Apri con: tk-pdf» → «Modifica tutto…».
+
+SOFTWARE LIBERO
+tk-pdf è gratuito con tutte le funzioni. È software libero sotto licenza GNU AGPL-3.0,
+fornito senza alcuna garanzia: i testi delle licenze (anche dei componenti inclusi) sono
+nell'app, in ☰ → Informazioni → «Licenze e codice sorgente».
+Codice sorgente: https://github.com/tecnikgeek-repo/tk-pdf-desktop
+Il nome tk-pdf e il logo non sono coperti dalla licenza: una versione modificata deve
+avere un nome diverso.
+
+COSA VA IN RETE E COSA RESTA SUL COMPUTER
+  • Aggiornamenti: tk-pdf controlla su pietrodefilippis.it se c'è una nuova versione
+    (al massimo ogni 12 ore) e la scarica solo se la installi.
+  • Statistiche anonime (nome, versione, sistema e un codice casuale): solo se le accetti
+    nel benvenuto; si cambiano in ☰ → Informazioni.
+  • Google Fonts: solo se lo consenti, quando modifichi un testo il cui carattere manca
+    nel PDF (Google riceve l'indirizzo IP e il nome del font).
+  • I tuoi PDF, le firme salvate e le impostazioni restano sul Mac.
+
+Creato da TecnikGeek — https://pietrodefilippis.it

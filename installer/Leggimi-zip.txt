@@ -1,0 +1,37 @@
+tk-pdf per Windows - installazione
+==================================
+
+1. Tasto destro sul file ZIP  >  "Estrai tutto..."  >  Estrai.
+2. Apri la cartella estratta e fai doppio clic su  "Installa tk-pdf".
+3. Nella finestra di tk-pdf premi  "Installa".
+
+Se Windows mostra un avviso di sicurezza (file scaricato da internet):
+  - "Apri file - Avviso di sicurezza": premi  Esegui
+  - "PC protetto da Windows": premi  Ulteriori informazioni  >  Esegui comunque
+
+Non servono permessi di amministratore. Dopo l'installazione la cartella estratta
+e il file ZIP si possono eliminare.
+
+tk-pdf si aggiorna da solo: quando esce una nuova versione compare il tasto
+"Aggiorna" in alto.
+
+Disinstallazione: Impostazioni > App > App installate > tk-pdf > Disinstalla.
+
+SOFTWARE LIBERO
+tk-pdf è gratuito con tutte le funzioni. È software libero sotto licenza
+GNU AGPL-3.0 (testo nella cartella app\licenze, insieme alle licenze dei
+componenti inclusi), fornito senza alcuna garanzia.
+Codice sorgente: https://github.com/tecnikgeek-repo/tk-pdf-desktop
+Il nome tk-pdf e il logo non sono coperti dalla licenza: una versione
+modificata deve avere un nome diverso.
+
+COSA VA IN RETE E COSA RESTA SUL COMPUTER
+  - Aggiornamenti: tk-pdf controlla su pietrodefilippis.it se c'è una nuova
+    versione (al massimo ogni 12 ore) e la scarica solo se la installi.
+  - Statistiche anonime (nome, versione, sistema e un codice casuale): solo se
+    le accetti nel benvenuto; si cambiano in Menu > Informazioni.
+  - Google Fonts: solo se lo consenti, quando modifichi un testo il cui
+    carattere manca nel PDF (Google riceve l'indirizzo IP e il nome del font).
+  - I tuoi PDF, le firme salvate e le impostazioni restano sul computer.
+
+Creato da TecnikGeek - https://pietrodefilippis.it

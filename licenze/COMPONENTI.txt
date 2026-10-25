@@ -1,0 +1,40 @@
+tk-pdf — componenti inclusi nel pacchetto e loro licenze
+=========================================================
+
+tk-pdf
+  © 2026 Pietro De Filippis (TecnikGeek). Licenza: GNU AGPL-3.0-or-later (COPYING-AGPL-3.0.txt).
+  Codice sorgente: https://github.com/tecnikgeek-repo/tk-pdf-desktop (tag v<versione> = questa versione).
+  Il nome «tk-pdf» e il logo non sono coperti dalla licenza (AGPL sez. 7): una versione modificata deve
+  avere un nome diverso.
+
+PyMuPDF e MuPDF (lettura, modifica e salvataggio dei PDF)
+  Serie 1.28. Licenza: GNU AGPL-3.0 (COPYING-AGPL-3.0.txt), Artifex Software.
+  Sorgente: https://github.com/pymupdf/PyMuPDF e https://mupdf.com/releases (anche su https://pypi.org/project/PyMuPDF/).
+
+Qt 6 / PySide6 / Shiboken6 (finestre e grafica)
+  Serie 6.11. Licenza: GNU LGPL-3.0 (LGPL-3.0.txt, che rimanda a GPL-3.0.txt), The Qt Company.
+  Sorgente: https://download.qt.io/official_releases/QtForPython/
+            https://code.qt.io/cgit/pyside/pyside-setup.git
+  Le librerie Qt e PySide6 sono file separati del pacchetto e si possono sostituire con una versione
+  compatibile modificata (Windows: cartella python\Lib\site-packages\PySide6; macOS: Contents/Frameworks).
+
+Python (interprete e libreria standard)
+  Serie 3.13. Licenza: PSF License Agreement (Python-PSF.txt; su Windows anche Python-LICENSE.txt, il file
+  di licenza del runtime incluso, con le condizioni della build Windows e le licenze di alcune parti, es. bzip2).
+  Sorgente: https://www.python.org/downloads/source/
+  Incluse nel runtime di Python:
+    OpenSSL 3      — Apache License 2.0 (Apache-2.0.txt). Sorgente: https://www.openssl.org/source/
+    libffi         — licenza MIT (MIT.txt), © Anthony Green, Red Hat e altri. Sorgente: https://github.com/libffi/libffi
+    SQLite         — pubblico dominio. Sorgente: https://www.sqlite.org/download.html
+
+certifi (certificati per le connessioni HTTPS)
+  Licenza: Mozilla Public License 2.0 (MPL-2.0.txt). Sorgente: https://pypi.org/project/certifi/
+  e https://github.com/certifi/python-certifi
+
+Solo su macOS
+  PyObjC (pyobjc-core, pyobjc-framework-Vision, per il riconoscimento del testo con Apple Vision)
+    Licenza MIT (MIT.txt), © Ronald Oussoren e altri. Sorgente: https://github.com/ronaldoussoren/pyobjc
+  PyInstaller (programma di avvio del pacchetto): GPL-2.0 con eccezione per i programmi creati.
+    Sorgente: https://github.com/pyinstaller/pyinstaller
+
+Riconoscimento del testo su Windows: usa l'OCR di Windows già presente nel sistema (nessun componente in più).

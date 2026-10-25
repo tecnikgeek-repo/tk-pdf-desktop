@@ -1,0 +1,13 @@
+.venv/
+.venv-mac/
+build/
+dist/
+__pycache__/
+*.pyc
+tk-pdf.exe
+assets/tk-pdf.iconset/
+assets/tk-pdf.icns
+tests/*.png
+tests/lavoro.pdf
+tests/risultato.pdf
+tests/protetto.pdf
