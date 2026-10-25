@@ -183,7 +183,7 @@ win.grab().save(os.path.join(HERE, "shot4_pages.png"))
 # 16. criticità corrette nella 1.1.0
 import stat
 from tkpdf import document as D, filesave, pro, webfonts
-from tkpdf.dialogs import AboutDialog, SignatureDialog
+from tkpdf.dialogs import SignatureDialog
 from tkpdf.tk_licenza import Licenza
 from tkpdf.tk_licenza_qt import BenvenutoDialog, LicenzeDialog
 warned, opened = [], []
@@ -236,7 +236,10 @@ print("font senza rete:", webfonts.fetch("ABCDEF+FontInesistente-Bold", download
 
 # finestre: firma (avviso + «salva» spento), Informazioni, Licenze, Benvenuto
 sd = SignatureDialog(win); print("firma salvata di default:", sd.save_it.isChecked())
-AboutDialog(win, win.icon)
+from PySide6.QtCore import QTimer as _QT
+_QT.singleShot(300, lambda: QApplication.activeModalWidget() and QApplication.activeModalWidget().reject())
+win.show_about()   # Informazioni comune (libreria): si apre e si chiude da sola
+print("informazioni: ok")
 ld = LicenzeDialog("tk-pdf", "test", pro.URL_SORGENTE, pro.cartella_licenze(), win)
 print("licenze nel pacchetto:", [ld.elenco.item(i).text() for i in range(ld.elenco.count())])
 lic = Licenza("tk-pdf-prova", "0", TMP)

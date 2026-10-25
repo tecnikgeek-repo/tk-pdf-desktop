@@ -16,7 +16,7 @@ from PySide6.QtWidgets import (
 
 from tkpdf import APP_TITLE, AUTHOR, VERSION
 from tkpdf.dialogs import (
-    OPEN_FILTER, STAMPS, AboutDialog, ColorButton, CompressDialog, MergeDialog, PasswordDialog,
+    OPEN_FILTER, STAMPS, ColorButton, CompressDialog, MergeDialog, PasswordDialog,
     SignatureDialog, SplitDialog, StampDialog, saved_signatures,
 )
 from tkpdf.document import PasswordRequired, PdfDocument
@@ -703,9 +703,25 @@ class MainWindow(QMainWindow):
 
     # ================================================================ file
     def show_about(self):
-        AboutDialog(self, self.icon,
-                    su_aggiornamenti=lambda: self.updates.check(manual=True),
-                    recenti=len(self._recent())).exec()
+        """Informazioni: finestra comune a tutti i software TK (libreria), colore di tk-pdf."""
+        from PySide6.QtGui import QDesktopServices, QPixmap
+        from tkpdf import AUTHOR_URL, pro, webfonts
+        from tkpdf.icon import render_icon
+        from tkpdf.tk_licenza_qt import InformazioniDialog
+        from tkpdf.util import app_data_dir
+        font = QCheckBox("Scarica da Google Fonts i caratteri mancanti")
+        font.setChecked(webfonts.consent() is True)
+        font.toggled.connect(webfonts.set_consent)
+        InformazioniDialog(
+            pro.licenza(), APP_TITLE, VERSION, "Lettore ed editor PDF: leggi, annota, firma e modifica i PDF.",
+            QPixmap.fromImage(render_icon(136)), "#e11d48",
+            dati=[("I tuoi dati", app_data_dir(), "Firme salvate e impostazioni restano su questo computer.")],
+            url_sorgente=pro.URL_SORGENTE, cartella_licenze=pro.cartella_licenze(),
+            su_aggiornamenti=lambda: self.updates.check(manual=True),
+            caselle=[(font, "Solo quando riscrivi un testo con un carattere che manca nel PDF. Google riceve "
+                            "l'indirizzo IP e il nome del font; senza, si usa un font simile.")],
+            pulsanti=[("C'è anche per Android", lambda: QDesktopServices.openUrl(QUrl(AUTHOR_URL + "/app/")))],
+            parent=self).exec()
 
     def _recent(self):
         items = self.settings.value("recent", [], type=list) or []

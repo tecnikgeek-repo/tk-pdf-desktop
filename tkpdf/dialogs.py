@@ -1,13 +1,11 @@
 """Finestre di dialogo."""
 import os
 import re
-import sys
 import time
 
 from PySide6.QtCore import QPointF, QRectF, QSize, Qt, Signal
-from PySide6.QtCore import QUrl
 from PySide6.QtGui import (
-    QColor, QDesktopServices, QIcon, QImage, QPainter, QPainterPath, QPen, QPixmap,
+    QColor, QImage, QPainter, QPainterPath, QPen,
 )
 from PySide6.QtWidgets import (
     QButtonGroup, QCheckBox, QColorDialog, QComboBox, QDialog, QDialogButtonBox, QDoubleSpinBox,
@@ -15,7 +13,7 @@ from PySide6.QtWidgets import (
     QMessageBox, QPlainTextEdit, QPushButton, QRadioButton, QSpinBox, QVBoxLayout, QWidget,
 )
 
-from tkpdf import APP_TITLE, AUTHOR, AUTHOR_URL, VERSION
+from tkpdf import APP_TITLE
 from tkpdf.util import FAMILY_LABELS, signatures_dir
 
 
@@ -563,192 +561,3 @@ class PasswordDialog(QDialog):
 
     def password(self):
         return self.pw.text()
-
-
-# ====================================================================== info
-class AboutDialog(QDialog):
-    """Informazioni: stessa impaginazione dell'app per telefono e di tk-tv (fondo navy, schede, pulsante accento)."""
-
-    def __init__(self, parent=None, icon: QIcon = None, su_aggiornamenti=None, recenti=0):
-        super().__init__(parent)
-        self.setWindowTitle("Informazioni")
-        self.setMinimumWidth(420)
-        self.setStyleSheet(
-            "QDialog { background: #0f172a; }"
-            "QLabel { color: #ffffff; }"
-            "#tkInfoCard { background: #1e293b; border-radius: 14px; }"
-            "#tkInfoTitolo { color: #e11d48; font-size: 11px; font-weight: 800; letter-spacing: 1px; }"
-            "#tkInfoEtichetta { color: #cbd5e1; font-size: 13px; }"
-            "#tkInfoValore { color: #ffffff; font-size: 13px; font-weight: 700; }"
-            "#tkInfoPie { color: #64748b; font-size: 11px; }"
-            "QCheckBox { color: #ffffff; font-size: 13px; spacing: 8px; }"
-            "QPushButton#tkChiaro { background: #334155; color: white; border: 0; border-radius: 10px;"
-            " padding: 11px 16px; font-weight: 600; }"
-            "QPushButton#tkChiaro:hover { background: #3f5168; }"
-            "QPushButton#tkAccento { background: #e11d48; color: white; border: 0; border-radius: 12px;"
-            " padding: 13px 16px; font-weight: 700; }"
-            "QPushButton#tkAccento:hover { background: #be123c; }"
-        )
-        # contenuto in un'area che scorre: su uno schermo basso la finestra non esce dallo schermo
-        from PySide6.QtWidgets import QFrame, QScrollArea
-        self._corpo = QWidget()
-        self._corpo.setObjectName("tkInfoCorpo")
-        self._corpo.setStyleSheet("#tkInfoCorpo { background: #0f172a; }")
-        lay = QVBoxLayout(self._corpo)
-        lay.setContentsMargins(16, 16, 16, 16)
-        lay.setSpacing(16)
-        self._scorri = QScrollArea()
-        self._scorri.setWidget(self._corpo)
-        self._scorri.setWidgetResizable(True)
-        self._scorri.setFrameShape(QFrame.Shape.NoFrame)
-        self._scorri.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self._scorri.setStyleSheet("QScrollArea { background: #0f172a; }")
-        fuori = QVBoxLayout(self)
-        fuori.setContentsMargins(0, 0, 0, 0)
-        fuori.addWidget(self._scorri)
-
-        # icona su quadrato accento, come sul telefono
-        testa = QVBoxLayout()
-        testa.setSpacing(2)
-        quadro = QLabel()
-        quadro.setFixedSize(72, 72)
-        quadro.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        quadro.setStyleSheet("background: qlineargradient(x1:0, y1:0, x2:1, y2:1,"
-                             " stop:0 #e11d48, stop:1 #be123c); border-radius: 20px;")
-        from tkpdf.icon import render_icon
-        quadro.setPixmap(QPixmap.fromImage(render_icon(44, solo_foglio=True)))
-        testa.addWidget(quadro, alignment=Qt.AlignmentFlag.AlignHCenter)
-        nome = QLabel(APP_TITLE)
-        nome.setStyleSheet("font-size: 20px; font-weight: 800;")
-        testa.addWidget(nome, alignment=Qt.AlignmentFlag.AlignHCenter)
-        riga = QLabel(f"Lettore ed editor PDF — versione {VERSION}")
-        riga.setStyleSheet("color: #cbd5e1; font-size: 12px;")
-        testa.addWidget(riga, alignment=Qt.AlignmentFlag.AlignHCenter)
-        lay.addLayout(testa)
-
-        sistema = "Windows" if sys.platform == "win32" else ("macOS" if sys.platform == "darwin" else sys.platform)
-        lay.addWidget(self._scheda("Versione", [
-            ("Versione", VERSION),
-            ("Sistema", sistema),
-            ("Documenti recenti", str(recenti)),
-        ]))
-
-        sviluppatore = self._scheda("Sviluppatore", [("Autore", AUTHOR)])
-        sito = QPushButton("Visita pietrodefilippis.it")
-        sito.setObjectName("tkChiaro")
-        sito.setCursor(Qt.CursorShape.PointingHandCursor)
-        sito.clicked.connect(lambda: QDesktopServices.openUrl(QUrl(AUTHOR_URL)))
-        sviluppatore.layout().addSpacing(6)
-        sviluppatore.layout().addWidget(sito)
-        lay.addWidget(sviluppatore)
-
-        if su_aggiornamenti is not None:
-            aggiorna = QPushButton("⬇  Controlla aggiornamenti")
-            aggiorna.setObjectName("tkAccento")
-            aggiorna.setCursor(Qt.CursorShape.PointingHandCursor)
-            aggiorna.clicked.connect(lambda: (self.accept(), su_aggiornamenti()))
-            lay.addWidget(aggiorna)
-
-        telefono = QPushButton("C'è anche per Android")
-        telefono.setObjectName("tkChiaro")
-        telefono.setCursor(Qt.CursorShape.PointingHandCursor)
-        # pagina delle app per telefono, non la home
-        telefono.clicked.connect(lambda: QDesktopServices.openUrl(QUrl(AUTHOR_URL + "/app/")))
-        lay.addWidget(telefono)
-
-        # software libero: licenza, codice sorgente e scelte sulla privacy
-        from tkpdf import pro, webfonts
-        libero = self._scheda("Software libero · AGPL-3.0", [])
-        testo = QLabel("tk-pdf è gratuito con tutte le funzioni: puoi usarlo, studiarlo, modificarlo e condividerlo. "
-                       "È fornito senza alcuna garanzia.")
-        testo.setObjectName("tkInfoEtichetta")
-        testo.setWordWrap(True)
-        libero.layout().addWidget(testo)
-        from tkpdf.tk_licenza_qt import stile_casella
-
-        def spiega(t):
-            # spiegazione sempre visibile sotto la casella (al posto del suggerimento su una riga lunghissima)
-            s = QLabel(t)
-            s.setObjectName("tkInfoEtichetta")
-            s.setWordWrap(True)
-            s.setContentsMargins(30, 0, 0, 4)
-            return s
-
-        stat = pro.casella_statistiche()
-        stat.setToolTip("")
-        libero.layout().addWidget(stat)
-        libero.layout().addWidget(spiega("Una volta al giorno: nome, versione e sistema, con un codice casuale. "
-                                         "Niente file né contenuti."))
-        font = QCheckBox("Scarica da Google Fonts i caratteri mancanti")
-        font.setObjectName("tkCasella")
-        font.setStyleSheet(stile_casella("QCheckBox#tkCasella"))
-        font.setChecked(webfonts.consent() is True)
-        font.toggled.connect(webfonts.set_consent)
-        libero.layout().addWidget(font)
-        libero.layout().addWidget(spiega("Solo quando riscrivi un testo con un carattere che manca nel PDF. Google "
-                                         "riceve l'indirizzo IP e il nome del font; senza, si usa un font simile."))
-        licenze = QPushButton("Licenze e codice sorgente")
-        licenze.setObjectName("tkChiaro")
-        licenze.setCursor(Qt.CursorShape.PointingHandCursor)
-        licenze.clicked.connect(lambda: pro.mostra_licenze(self))
-        libero.layout().addSpacing(6)
-        libero.layout().addWidget(licenze)
-        lay.addWidget(libero)
-
-        caffe = pro.pulsante_caffe("tkChiaro")
-        if caffe is not None:
-            lay.addWidget(caffe)
-
-        pie = QLabel(f"© 2026 Pietro De Filippis ({AUTHOR}) — pietrodefilippis.it")
-        pie.setObjectName("tkInfoPie")
-        lay.addWidget(pie)
-
-        chiudi = QPushButton("Chiudi")
-        chiudi.setObjectName("tkChiaro")
-        chiudi.setCursor(Qt.CursorShape.PointingHandCursor)
-        chiudi.clicked.connect(self.accept)
-        lay.addWidget(chiudi, alignment=Qt.AlignmentFlag.AlignRight)
-        self._misura()
-
-    LARGHEZZA = 440
-
-    def _misura(self):
-        """Larghezza fissa e altezza calcolata sul testo vero (le etichette che vanno a capo non vengono
-        schiacciate); oltre l'altezza dello schermo il contenuto scorre."""
-        from PySide6.QtGui import QGuiApplication
-        self.setFixedWidth(self.LARGHEZZA)
-        utile = self.LARGHEZZA - self._scorri.verticalScrollBar().sizeHint().width()
-        alto = self._corpo.layout().totalHeightForWidth(utile)
-        if alto <= 0:
-            alto = self._corpo.sizeHint().height()
-        schermo = QGuiApplication.primaryScreen()
-        massimo = (schermo.availableGeometry().height() - 60) if schermo is not None else 900
-        self.resize(self.LARGHEZZA, min(alto + 2, massimo))
-
-    def showEvent(self, ev):
-        super().showEvent(ev)
-        from tkpdf.tk_licenza_qt import centra
-        centra(self)
-
-    @staticmethod
-    def _scheda(titolo, righe):
-        card = QWidget()
-        card.setObjectName("tkInfoCard")
-        card.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
-        v = QVBoxLayout(card)
-        v.setContentsMargins(16, 14, 16, 16)
-        v.setSpacing(6)
-        intestazione = QLabel(titolo.upper())
-        intestazione.setObjectName("tkInfoTitolo")
-        v.addWidget(intestazione)
-        for etichetta, valore in righe:
-            riga = QHBoxLayout()
-            sinistra = QLabel(etichetta)
-            sinistra.setObjectName("tkInfoEtichetta")
-            destra = QLabel(valore)
-            destra.setObjectName("tkInfoValore")
-            riga.addWidget(sinistra)
-            riga.addStretch(1)
-            riga.addWidget(destra)
-            v.addLayout(riga)
-        return card
