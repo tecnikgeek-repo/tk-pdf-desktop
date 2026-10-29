@@ -1,0 +1,42 @@
+tk-pdf per Linux — installazione
+================================
+
+Funziona su Ubuntu 22.04 o più recente (e sulle distribuzioni simili), computer a 64 bit (x86_64).
+
+1. Scarica il file «tk-pdf-<versione>-linux-x86_64.AppImage» e mettilo dove vuoi tenerlo,
+   per esempio nella cartella «Applicazioni» della tua home.
+2. Rendilo avviabile: tasto destro sul file → Proprietà → attiva «Esegui come programma»
+   (oppure da Terminale: chmod +x tk-pdf-*.AppImage).
+3. Aprilo con un doppio clic. Al primo avvio tk-pdf si aggiunge da solo al menu delle applicazioni,
+   con la sua icona, e compare in «Apri con» per i PDF e le immagini: dalla volta dopo lo trovi lì.
+
+Se non si apre e il Terminale dice che manca FUSE: sudo apt install fuse3 (su Ubuntu c'è già).
+
+APRIRE I PDF CON tk-pdf
+☰ → «Usa tk-pdf per aprire i PDF…»: da quel momento il doppio clic su un PDF apre tk-pdf.
+(In alternativa: tasto destro su un PDF → «Apri con» → tk-pdf → «Usa sempre».)
+
+Tutto incluso
+Il riconoscimento del testo («Da foto a PDF» → «Rendi tutto modificabile») è dentro il programma:
+non serve installare niente. La stampa usa le stampanti del sistema.
+
+Software libero
+tk-pdf è gratuito, con tutte le funzioni, ed è software libero: licenza GNU AGPL-3.0, senza alcuna
+garanzia. Codice sorgente: https://github.com/tecnikgeek-repo/tk-pdf-desktop
+Le licenze di tk-pdf e dei componenti inclusi (Python, Qt, PyMuPDF, Tesseract…) sono nel programma:
+☰ → Informazioni → «Licenze e codice sorgente».
+Il nome tk-pdf e il logo non sono coperti dalla licenza: una versione modificata deve avere un nome diverso.
+
+I tuoi dati (restano sul computer)
+- Firme salvate e impostazioni: ~/.local/share/tk-pdf e ~/.config/TecnikGeek
+- I tuoi PDF non vengono mai caricati su internet, nemmeno per il riconoscimento del testo.
+- Aggiornamenti: tk-pdf sostituisce da solo il file AppImage con la versione nuova (firmata).
+- Per togliere tutto: cancella il file AppImage (la voce del menu sparisce) e le cartelle
+  ~/.local/share/tk-pdf e ~/.config/TecnikGeek/tk-pdf.conf.
+
+Cosa va in rete
+- pietrodefilippis.it per controllare se c'è una versione nuova (al massimo ogni 12 ore).
+- Statistiche anonime SOLO se le accetti nel benvenuto; si cambiano in ☰ → Informazioni.
+- Google Fonts: solo se lo consenti, quando modifichi un testo il cui carattere manca nel PDF.
+
+Creato da TecnikGeek — https://pietrodefilippis.it

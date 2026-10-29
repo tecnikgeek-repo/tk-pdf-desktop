@@ -10,14 +10,24 @@ from PySide6.QtGui import QColor, QImage
 # ------------------------------------------------------------------ percorsi
 IS_MAC = sys.platform == "darwin"
 IS_WIN = sys.platform == "win32"
+IS_LINUX = sys.platform.startswith("linux")
+
+from tkpdf import tk_linux  # noqa: E402  (libreria comune dei software TK)
+
+LINUX_DESKTOP_ID = "tk-pdf"  # nome del file .desktop = app_id della finestra su Wayland (icona nella barra)
+LINUX_MIME = "application/pdf;image/png;image/jpeg;image/tiff;"
 
 
 def app_data_dir():
-    if IS_MAC:
-        base = os.path.expanduser("~/Library/Application Support")
+    """Firme e impostazioni. Windows: %APPDATA%/tk-pdf; Mac: Application Support; Linux: ~/.local/share/tk-pdf."""
+    if os.environ.get("TKPDF_DATI"):  # collaudi
+        path = os.environ["TKPDF_DATI"]
+    elif IS_MAC:
+        path = os.path.join(os.path.expanduser("~/Library/Application Support"), "tk-pdf")
+    elif IS_LINUX:
+        path = tk_linux.cartella_dati("tk-pdf")
     else:
-        base = os.environ.get("APPDATA") or os.path.expanduser("~")
-    path = os.path.join(base, "tk-pdf")
+        path = os.path.join(os.environ.get("APPDATA") or os.path.expanduser("~"), "tk-pdf")
     os.makedirs(path, exist_ok=True)
     return path
 
@@ -104,6 +114,18 @@ if IS_MAC:
         "serif": ("Times New Roman.ttf", "Times New Roman Bold.ttf", "Times New Roman Italic.ttf",
                   "Times New Roman Bold Italic.ttf"),
         "mono": ("Courier New.ttf", "Courier New Bold.ttf", "Courier New Italic.ttf", "Courier New Bold Italic.ttf"),
+    }
+elif IS_LINUX:
+    # Liberation: stesse misure di Arial, Times New Roman e Courier New (c'è in Ubuntu)
+    FONT_DIRS = ["/usr/share/fonts/truetype/liberation", "/usr/share/fonts/truetype/liberation2",
+                 os.path.expanduser("~/.local/share/fonts")]
+    FAMILY_FILES = {
+        "sans": ("LiberationSans-Regular.ttf", "LiberationSans-Bold.ttf", "LiberationSans-Italic.ttf",
+                 "LiberationSans-BoldItalic.ttf"),
+        "serif": ("LiberationSerif-Regular.ttf", "LiberationSerif-Bold.ttf", "LiberationSerif-Italic.ttf",
+                  "LiberationSerif-BoldItalic.ttf"),
+        "mono": ("LiberationMono-Regular.ttf", "LiberationMono-Bold.ttf", "LiberationMono-Italic.ttf",
+                 "LiberationMono-BoldItalic.ttf"),
     }
 else:
     FONT_DIRS = [os.path.join(os.environ.get("WINDIR", r"C:\Windows"), "Fonts")]
@@ -255,3 +277,39 @@ def font_has_text(font, text):
         return all(font.has_glyph(ord(ch)) for ch in text if not ch.isspace())
     except Exception:
         return False
+
+
+# ------------------------------------------------------------------ Linux
+def install_linux_menu():
+    """Linux (AppImage): voce «tk-pdf» nel menu delle applicazioni con l'icona e in «Apri con» per PDF e immagini.
+    Si corregge da sola se il file AppImage è stato spostato. Ritorna il percorso del .desktop o ""."""
+    return tk_linux.installa_menu(LINUX_DESKTOP_ID, "tk-pdf", "Lettore ed editor PDF: leggi, annota, firma e modifica "
+                                  "i PDF (TecnikGeek)", "Office;Viewer;Graphics;", resource_path("assets/tk-pdf-512.png"),
+                                  nome_generico="Lettore PDF", parole="pdf;firma;annota;modifica;unisci;scansione;",
+                                  mime=LINUX_MIME)
+
+
+def linux_default_pdf():
+    """Linux: tk-pdf diventa il programma predefinito per i PDF (xdg-mime). Ritorna True se riuscito."""
+    import subprocess
+    if not install_linux_menu():
+        return False
+    try:
+        subprocess.run(["xdg-mime", "default", LINUX_DESKTOP_ID + ".desktop", "application/pdf"], check=True,
+                       capture_output=True, timeout=20, env=tk_linux.system_env())
+        r = subprocess.run(["xdg-mime", "query", "default", "application/pdf"], capture_output=True, text=True,
+                           timeout=20, env=tk_linux.system_env())
+        return r.stdout.strip() == LINUX_DESKTOP_ID + ".desktop"
+    except (OSError, subprocess.SubprocessError):
+        return False
+
+
+def reveal(path):
+    """Mostra il file nella sua cartella (Esplora file / Finder / file manager di Linux)."""
+    import subprocess
+    if IS_MAC:
+        subprocess.Popen(["open", "-R", path])
+    elif IS_LINUX:
+        tk_linux.mostra_nel_file_manager(path)
+    else:
+        subprocess.Popen(["explorer", "/select,", os.path.normpath(path)])

@@ -1,5 +1,7 @@
 import os, sys, shutil, tempfile
-os.environ["QT_QPA_PLATFORM"] = "offscreen"; os.environ["QT_QPA_FONTDIR"] = r"C:\Windows\Fonts"
+os.environ["QT_QPA_PLATFORM"] = "offscreen"
+if sys.platform == "win32":
+    os.environ["QT_QPA_FONTDIR"] = r"C:\Windows\Fonts"
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import pymupdf as fitz
 from PySide6.QtCore import QPointF, QRectF, Qt

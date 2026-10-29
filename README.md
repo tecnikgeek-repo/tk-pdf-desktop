@@ -15,7 +15,7 @@
 
 ### Leggi, annota, firma e modifica i PDF. Senza abbonamenti.
 
-Un editor PDF completo per Windows e macOS: tutte le funzioni, gratis, per sempre.
+Un editor PDF completo per Windows, macOS e Linux: tutte le funzioni, gratis, per sempre.
 
 </div>
 
@@ -83,7 +83,7 @@ Password con cifratura AES-256, compressione in un file nuovo, foto di documenti
 
 ## 🔒 I tuoi dati
 
-tk-pdf lavora tutto sul tuo computer: i PDF non vengono mai caricati su internet, nemmeno per il riconoscimento del testo (usa quello di Windows o di macOS).
+tk-pdf lavora tutto sul tuo computer: i PDF non vengono mai caricati su internet, nemmeno per il riconoscimento del testo (usa quello di Windows o di macOS; su Linux è incluso nel programma).
 
 | Resta sul tuo computer | Va in rete (e perché) |
 |---|---|
@@ -99,6 +99,7 @@ pubblicati dall'autore.
 
 - **Windows 10 / 11** — scarica l'installer `.exe` e avvialo. Non servono i permessi di amministratore.
 - **macOS** (Intel o Apple Silicon) — apri il `.dmg` e trascina l'app in *Applicazioni*. Al primo avvio: clic destro sull'app → *Apri*.
+- **Linux** (Ubuntu 22.04 o più recente, x86_64) — scarica il file `.AppImage`, rendilo eseguibile (*Proprietà* → *Esegui come programma*) e aprilo: si aggiunge da solo al menu delle applicazioni.
 
 Gli aggiornamenti arrivano da soli: quando esce una versione nuova il programma te lo propone.
 
@@ -117,7 +118,7 @@ python -m venv .venv
 
 Su macOS: `source .venv/bin/activate`, poi `pip install "pyside6-essentials==6.11.*" "pymupdf==1.28.*" certifi pyobjc-core pyobjc-framework-Vision` e `python run.py`.
 
-Pacchetti: Windows con `installer\build.ps1`, macOS con `mac/build_mac.sh`.
+Pacchetti: Windows con `installer\build.ps1`, macOS con `mac/build_mac.sh`, Linux con `linux/build_linux.sh` (AppImage, Tesseract incluso).
 
 </details>
 

@@ -1,4 +1,5 @@
-"""Aggiornamenti automatici: controllo del manifest, download verificato e installazione."""
+"""Aggiornamenti automatici: controllo del manifest, download verificato e installazione (cartella su Windows,
+bundle sul Mac, file AppImage su Linux)."""
 import hashlib
 import json
 import os
@@ -12,7 +13,8 @@ import urllib.request
 
 from tkpdf import VERSION
 from tkpdf.tk_aggiornamento import asset_valido
-from tkpdf.util import IS_MAC, IS_WIN, app_data_dir
+from tkpdf import tk_linux
+from tkpdf.util import IS_LINUX, IS_MAC, IS_WIN, app_data_dir
 
 def _codice_conteggio():
     """«; <codice>» per il manifest: conta l'installazione una volta sola anche se cambia rete (Privacy 4-ter)."""
@@ -128,6 +130,8 @@ def is_newer(remote, local=VERSION):
 def platform_key():
     if IS_MAC:
         return "mac-arm64" if platform.machine() == "arm64" else "mac-x86_64"
+    if IS_LINUX:
+        return tk_linux.chiave_piattaforma()
     return "windows"
 
 
@@ -177,7 +181,7 @@ def mac_bundle_path():
 
 
 def install_kind():
-    """'windows' o 'mac' se l'app è installata e aggiornabile; None per la versione di sviluppo."""
+    """'windows', 'mac' o 'linux' se l'app è installata e aggiornabile; None per la versione di sviluppo."""
     root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     if IS_WIN:
         bundled = os.path.join(root, "python")
@@ -187,6 +191,8 @@ def install_kind():
         return None
     if IS_MAC and getattr(sys, "frozen", False) and mac_bundle_path():
         return "mac"
+    if IS_LINUX and tk_linux.appimage_path():
+        return "linux"
     return None
 
 
@@ -251,6 +257,10 @@ def apply_update(path, silent=False, relaunch=True, new_version=""):
                          start_new_session=True, stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
                          stderr=subprocess.DEVNULL)
         return
+    if IS_LINUX:
+        tk_linux.applica_aggiornamento(path, download_dir(), os.path.join(app_data_dir(), "aggiornamento.log"),
+                                       relaunch)
+        return
     raise RuntimeError("aggiornamento automatico non disponibile su questo sistema")
 
 
@@ -275,7 +285,7 @@ def cli_update_test(argv):
             return 0
         asset = asset_for(manifest)
         if not asset:
-            write("nessun file per questa piattaforma")
+            write("nessun file valido per questo sistema (manca o non è firmato): aggiornamento rifiutato")
             return 2
         kind = install_kind()
         dest = os.path.join(download_dir(), os.path.basename(asset["url"].split("?")[0]))

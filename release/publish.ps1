@@ -1,6 +1,7 @@
-﻿# Pubblica una versione di tk-pdf: gli utenti la ricevono con l'aggiornamento automatico.
+﻿# Pubblica una versione di tk-pdf per Windows, Mac e Linux: gli utenti la ricevono con l'aggiornamento automatico.
 # Uso:  powershell -ExecutionPolicy Bypass -File release\publish.ps1 -Notes "Novità 1|Novità 2"
-# Prerequisiti: VERSION alzata in tkpdf\__init__.py, commit fatto (lo script fa push e attende la build Mac).
+# Prerequisiti: VERSION alzata in tkpdf\__init__.py, commit fatto (lo script fa push e attende le build Mac e Linux).
+# -SkipMac: solo Windows (niente build su GitHub, manifest senza chiavi mac/linux).
 param(
     [Parameter(Mandatory = $true)][string]$Notes,
     [switch]$SkipMac
@@ -51,28 +52,43 @@ if (-not $SkipMac) {
         git push -q origin "v$version"
         if ($LASTEXITCODE -ne 0) { throw "Invio del tag v$version non riuscito" }
     }
-    # la build Mac non parte più da sola a ogni push: la avvio io sul commit appena inviato
-    gh workflow run build-mac.yml --repo tecnikgeek-repo/tk-pdf-desktop --ref main
-    if ($LASTEXITCODE -ne 0) { throw 'Avvio della build macOS su GitHub non riuscito' }
-    Start-Sleep -Seconds 5
+    # le build Mac e Linux non partono più da sole a ogni push: le avvio io, in parallelo, sul commit appena inviato
+    $repo = 'tecnikgeek-repo/tk-pdf-desktop'
     $sha = (git rev-parse HEAD).Trim()
-    Write-Host "   attendo la build macOS del commit $($sha.Substring(0,7))…"
-    $runId = $null
-    for ($i = 0; $i -lt 30 -and -not $runId; $i++) {
-        $runId = gh run list --repo tecnikgeek-repo/tk-pdf-desktop --workflow build-mac.yml --commit $sha --json databaseId --jq '.[0].databaseId'
-        if (-not $runId) { Start-Sleep -Seconds 5 }
+    foreach ($wf in 'build-mac.yml', 'build-linux.yml') {
+        gh workflow run $wf --repo $repo --ref main
+        if ($LASTEXITCODE -ne 0) { throw "Avvio di $wf su GitHub non riuscito" }
     }
-    if (-not $runId) { throw 'Build macOS non trovata su GitHub' }
-    gh run watch $runId --repo tecnikgeek-repo/tk-pdf-desktop --exit-status | Out-Null
-    if ($LASTEXITCODE -ne 0) { throw "Build macOS fallita: https://github.com/tecnikgeek-repo/tk-pdf-desktop/actions/runs/$runId" }
+    Start-Sleep -Seconds 5
+    $runs = @{}
+    foreach ($wf in 'build-mac.yml', 'build-linux.yml') {
+        $runId = $null
+        for ($i = 0; $i -lt 30 -and -not $runId; $i++) {
+            $runId = gh run list --repo $repo --workflow $wf --commit $sha --json databaseId --jq '.[0].databaseId'
+            if (-not $runId) { Start-Sleep -Seconds 5 }
+        }
+        if (-not $runId) { throw "$wf non trovata su GitHub" }
+        $runs[$wf] = $runId
+    }
+    Write-Host "   attendo le build macOS e Linux del commit $($sha.Substring(0,7))…"
+    foreach ($wf in $runs.Keys) {
+        gh run watch $runs[$wf] --repo $repo --exit-status | Out-Null
+        if ($LASTEXITCODE -ne 0) { throw "$wf fallita: https://github.com/$repo/actions/runs/$($runs[$wf])" }
+    }
     $macDir = "dist\mac-$version"
     if (Test-Path $macDir) { Remove-Item $macDir -Recurse -Force }
-    gh run download $runId --repo tecnikgeek-repo/tk-pdf-desktop --dir $macDir --pattern 'tk-pdf-mac-*'
+    gh run download $runs['build-mac.yml'] --repo $repo --dir $macDir --pattern 'tk-pdf-mac-*'
     foreach ($arch in 'arm64', 'x86_64') {
         $dmg = Get-ChildItem $macDir -Recurse -Filter "tk-pdf-$version-mac-$arch.dmg" | Select-Object -First 1
         if (-not $dmg) { throw "Manca il dmg $arch" }
         $assets += @{ key = "mac-$arch"; file = $dmg.FullName }
     }
+    # Linux: la build mette l'AppImage nella release v<versione> del repo
+    gh release download "v$version" --repo $repo --dir $macDir --pattern '*.AppImage' --clobber
+    if ($LASTEXITCODE -ne 0) { throw "Download dell'AppImage dalla release v$version fallito" }
+    $appImage = Join-Path $macDir "tk-pdf-$version-linux-x86_64.AppImage"
+    if (-not (Test-Path $appImage)) { throw "Manca l'AppImage Linux" }
+    $assets += @{ key = 'linux-x86_64'; file = (Resolve-Path $appImage).Path }
 }
 
 # --- manifest
@@ -125,14 +141,14 @@ foreach ($a in $assets) {
 Write-Host "   manifest e file online verificati"
 
 # --- cartella Dropbox
-New-Item -ItemType Directory -Force "$dropbox\installer\Windows", "$dropbox\installer\Mac" | Out-Null
+New-Item -ItemType Directory -Force "$dropbox\installer\Windows", "$dropbox\installer\Mac", "$dropbox\installer\Linux" | Out-Null
 Get-ChildItem "$dropbox\installer" -Recurse -File | Where-Object { $_.Name -notlike "*$version*" } | Remove-Item -Force
 foreach ($a in $assets) {
     if ($a.key -eq 'windows-zip') { continue }
-    $sub = if ($a.key -like 'windows*') { 'Windows' } else { 'Mac' }
+    $sub = if ($a.key -like 'windows*') { 'Windows' } elseif ($a.key -like 'linux-*') { 'Linux' } else { 'Mac' }
     Copy-Item $a.file "$dropbox\installer\$sub\" -Force
 }
-& robocopy $root "$dropbox\progetto" /MIR /NFL /NDL /NJH /NJS /NP /XD .venv .venv-mac build dist __pycache__ .git `
+& robocopy $root "$dropbox\progetto" /MIR /NFL /NDL /NJH /NJS /NP /XD .venv .venv-mac .venv-linux build dist __pycache__ .git `
     /XF tk-pdf.exe *.pyc lavoro.pdf risultato.pdf protetto.pdf selftest*.png diag.png | Out-Null
 
 Write-Host "== tk-pdf $version pubblicato: gli utenti lo riceveranno al prossimo avvio (entro 12 ore)."

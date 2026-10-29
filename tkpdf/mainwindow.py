@@ -26,13 +26,18 @@ from tkpdf.scan import ScanDialog
 from tkpdf.thumbs import ThumbPanel
 from tkpdf.tk_licenza_qt import dentro_lo_schermo, testata_compatta
 from tkpdf.updater_ui import UpdateManager
-from tkpdf.util import IS_MAC, human_size, pix_to_qimage, qimage_to_png_bytes
+from tkpdf.util import IS_LINUX, IS_MAC, human_size, pix_to_qimage, qimage_to_png_bytes
 from tkpdf.viewer import TOOL_HINTS, PdfView, Tool
 
 RECENT_THUMB_W, RECENT_THUMB_H = 34, 44
 ZOOM_PRESETS = ["50%", "75%", "100%", "125%", "150%", "200%", "300%", "400%"]
 FIT_WIDTH = "Adatta larghezza"
 FIT_PAGE = "Pagina intera"
+
+
+def _linux_appimage():
+    from tkpdf import tk_linux
+    return bool(tk_linux.appimage_path())
 
 
 def shortcut_text(text):
@@ -693,7 +698,7 @@ class MainWindow(QMainWindow):
         m.addAction("📁 Mostra nella cartella", self.show_in_folder).setEnabled(bool(is_open and self.pdf.path))
         m.addAction("✖ Chiudi documento\tCtrl+W", self.close_document).setEnabled(is_open)
         m.addSeparator()
-        if sys.platform == "win32":
+        if sys.platform == "win32" or (IS_LINUX and _linux_appimage()):
             m.addAction("📌 Usa tk-pdf per aprire i PDF…", self.make_default)
         m.addAction("🔄 Cerca aggiornamenti…", lambda: self.updates.check(manual=True))
         m.addAction("ℹ️ Informazioni", self.show_about)
@@ -1054,13 +1059,20 @@ class MainWindow(QMainWindow):
 
     def show_in_folder(self):
         if self.pdf.path:
-            import subprocess
-            if IS_MAC:
-                subprocess.Popen(["open", "-R", self.pdf.path])
-            else:
-                subprocess.Popen(["explorer", "/select,", os.path.normpath(self.pdf.path)])
+            from tkpdf.util import reveal
+            reveal(self.pdf.path)
 
     def make_default(self):
+        if IS_LINUX:
+            # Linux: la voce nel menu dichiara i PDF (MimeType) e xdg-mime la rende predefinita, senza altri passaggi
+            from tkpdf.util import linux_default_pdf
+            if linux_default_pdf():
+                QMessageBox.information(self, APP_TITLE, "Fatto: i file PDF ora si aprono con tk-pdf.")
+            else:
+                QMessageBox.warning(self, APP_TITLE, "Non sono riuscito a impostare tk-pdf come programma per i PDF.\n\n"
+                                    "Fallo a mano: tasto destro su un PDF → «Apri con» → scegli tk-pdf e "
+                                    "attiva «Usa sempre».")
+            return
         try:
             from tkpdf.winreg_assoc import register
             register()

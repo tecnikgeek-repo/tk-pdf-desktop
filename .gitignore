@@ -11,3 +11,4 @@ tests/*.png
 tests/lavoro.pdf
 tests/risultato.pdf
 tests/protetto.pdf
+.venv-linux/

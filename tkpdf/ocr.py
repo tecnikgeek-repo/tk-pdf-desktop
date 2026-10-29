@@ -1,6 +1,7 @@
-"""Riconoscimento del testo (OCR) con i motori del sistema: Windows.Media.Ocr e Apple Vision.
+"""Riconoscimento del testo (OCR) con i motori del sistema: Windows.Media.Ocr e Apple Vision; su Linux Tesseract,
+incluso nel pacchetto AppImage (vedi ocr_linux.py: niente da installare).
 
-Niente Tesseract: su Windows servirebbero exe non firmati (bloccati da Smart App Control).
+Su Windows niente Tesseract: servirebbero exe non firmati (bloccati da Smart App Control).
 Su Windows l'OCR gira in PowerShell (firmato Microsoft) con un solo avvio per tutte le pagine."""
 import json
 import os
@@ -70,6 +71,9 @@ def available():
             return True
         except Exception:
             return False
+    if sys.platform.startswith("linux"):
+        from tkpdf import ocr_linux
+        return ocr_linux.disponibile()
     return False
 
 
@@ -103,6 +107,9 @@ def recognize(images):
         raw = _recognize_windows([p[0] for p in prepared])
     elif sys.platform == "darwin":
         raw = [_recognize_mac(p[0]) for p in prepared]
+    elif sys.platform.startswith("linux"):
+        from tkpdf import ocr_linux
+        raw = ocr_linux.riconosci([p[0] for p in prepared])
     else:
         raise RuntimeError("Riconoscimento del testo non disponibile su questo sistema")
     out = []

@@ -16,7 +16,8 @@ Qt 6 / PySide6 / Shiboken6 (finestre e grafica)
   Sorgente: https://download.qt.io/official_releases/QtForPython/
             https://code.qt.io/cgit/pyside/pyside-setup.git
   Le librerie Qt e PySide6 sono file separati del pacchetto e si possono sostituire con una versione
-  compatibile modificata (Windows: cartella python\Lib\site-packages\PySide6; macOS: Contents/Frameworks).
+  compatibile modificata (Windows: cartella python\Lib\site-packages\PySide6; macOS: Contents/Frameworks;
+  Linux: dentro il file AppImage, si estrae con «tk-pdf-….AppImage --appimage-extract», cartella usr/lib/tk-pdf/_internal).
 
 Python (interprete e libreria standard)
   Serie 3.13. Licenza: PSF License Agreement (Python-PSF.txt; su Windows anche Python-LICENSE.txt, il file
@@ -38,3 +39,17 @@ Solo su macOS
     Sorgente: https://github.com/pyinstaller/pyinstaller
 
 Riconoscimento del testo su Windows: usa l'OCR di Windows già presente nel sistema (nessun componente in più).
+
+Solo su Linux
+  Tesseract OCR (riconoscimento del testo, con i dati per italiano e inglese)
+    Licenza Apache-2.0 (Apache-2.0.txt), © Google e i contributori di Tesseract.
+    Sorgente: https://github.com/tesseract-ocr/tesseract e https://github.com/tesseract-ocr/tessdata
+    Il programma e le librerie che usa (Leptonica, libarchive, libjpeg-turbo, libpng, libtiff, libwebp, giflib,
+    OpenJPEG, libgomp e le altre) sono presi dai pacchetti di Ubuntu senza modifiche: l'elenco esatto dei file,
+    le versioni e i file copyright originali di ogni pacchetto sono in «Tesseract-OCR-e-librerie.txt».
+  libxcb-cursor (serve a Qt sotto X11): licenza MIT/X11 (libxcb-cursor-LICENSE.txt).
+    Sorgente: https://gitlab.freedesktop.org/xorg/lib/libxcb-cursor
+  PyInstaller (programma di avvio del pacchetto): GPL-2.0 con eccezione per i programmi creati.
+    Sorgente: https://github.com/pyinstaller/pyinstaller
+  AppImage runtime (avvio del file AppImage): licenza MIT. Sorgente: https://github.com/AppImage/type2-runtime
+

@@ -189,6 +189,9 @@ def _diagnose(path, exc):
         return SaveError(f"Non hai i permessi per scrivere nella cartella:\n{folder}\n\n"
                          "Usa «Salva con nome» e scegli un'altra cartella.", can_retry=False)
     if getattr(exc, "winerror", None) == 5 or isinstance(exc, PermissionError):
+        if not IS_WIN:
+            return SaveError("Il sistema nega la modifica di questo file: i permessi non lo consentono.\n"
+                             "Usa «Salva con nome».")
         return SaveError("Windows nega la modifica di questo file: i permessi non lo consentono oppure "
                          "un antivirus lo sta proteggendo.")
     return SaveError(f"Il file non può essere sostituito adesso ({exc}).\n"

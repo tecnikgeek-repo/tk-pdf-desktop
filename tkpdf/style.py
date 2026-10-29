@@ -43,7 +43,7 @@ ARROW_UP_DARK = _arrow("freccia-su-scura", GRAY_500, up=True)
 
 QSS = f"""
 QMainWindow, QDialog {{ background: {GRAY_50}; }}
-QWidget {{ font-family: 'Segoe UI', '.AppleSystemUIFont', 'Helvetica Neue', 'Segoe UI Emoji'; font-size: 10pt; color: {NAVY}; }}
+QWidget {{ font-family: 'Segoe UI', '.AppleSystemUIFont', 'Helvetica Neue', 'Ubuntu', 'Noto Sans', 'Segoe UI Emoji', 'Noto Color Emoji'; font-size: 10pt; color: {NAVY}; }}
 
 /* Barra superiore */
 #tkHeader {{
