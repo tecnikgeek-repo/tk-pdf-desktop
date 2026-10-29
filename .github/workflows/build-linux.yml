@@ -4,8 +4,6 @@ name: Build Linux
 # Runner ubuntu-22.04: l'AppImage chiede la glibc della macchina di build, così gira da Ubuntu 22.04 in su.
 on:
   workflow_dispatch:
-  push:
-    branches: ['linux']  # PROVVISORIO: prove dal ramo linux, da togliere prima di unire a main
 
 permissions:
   contents: write
@@ -42,13 +40,6 @@ jobs:
             sleep 8
           done
           gh release view "$TAG" --json assets --jq '.assets[].name'
-      # PROVVISORIO: l'AppImage del ramo linux per provarlo su un Ubuntu vero (da togliere prima di unire a main)
-      - uses: actions/upload-artifact@v4
-        if: github.ref == 'refs/heads/linux'
-        with:
-          name: tk-pdf-linux-prova
-          path: dist/*.AppImage
-          retention-days: 1
       - uses: actions/upload-artifact@v4
         if: failure()
         continue-on-error: true
