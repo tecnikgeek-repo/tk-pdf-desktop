@@ -291,17 +291,7 @@ def install_linux_menu():
 
 def linux_default_pdf():
     """Linux: tk-pdf diventa il programma predefinito per i PDF (xdg-mime). Ritorna True se riuscito."""
-    import subprocess
-    if not install_linux_menu():
-        return False
-    try:
-        subprocess.run(["xdg-mime", "default", LINUX_DESKTOP_ID + ".desktop", "application/pdf"], check=True,
-                       capture_output=True, timeout=20, env=tk_linux.system_env())
-        r = subprocess.run(["xdg-mime", "query", "default", "application/pdf"], capture_output=True, text=True,
-                           timeout=20, env=tk_linux.system_env())
-        return r.stdout.strip() == LINUX_DESKTOP_ID + ".desktop"
-    except (OSError, subprocess.SubprocessError):
-        return False
+    return bool(install_linux_menu()) and tk_linux.rendi_predefinito(LINUX_DESKTOP_ID, "application/pdf")
 
 
 def reveal(path):

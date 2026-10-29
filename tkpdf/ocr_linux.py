@@ -1,6 +1,7 @@
 """Riconoscimento del testo (OCR) su Linux con Tesseract INCLUSO nel pacchetto: niente da installare nel sistema.
 
-Copia IDENTICA in tk-pdf e tk-listino (originale: tk-pdf-desktop, ramo linux). Niente Qt e niente import del
+Copia IDENTICA in tk-pdf e tk-listino (originale in Dropbox\\CLAUDE\\tk-software\\librerie, con
+prepara_tesseract.sh che va in linux/). Niente Qt e niente import del
 programma: lavora su file immagine. La cartella «tesseract» (bin/tesseract, lib/ con le librerie prese dai pacchetti
 Ubuntu, tessdata/ con ita+eng, licenze/) la prepara linux/prepara_tesseract.sh e build_linux.sh la mette accanto
 all'eseguibile dentro l'AppImage. Tesseract gira con un ambiente costruito apposta (le sue librerie e i suoi dati),
