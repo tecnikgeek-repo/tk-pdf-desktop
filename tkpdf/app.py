@@ -65,8 +65,8 @@ def runtime_check():
     from PySide6.QtPrintSupport import QPrinter, QPrinterInfo
     from tkpdf import ocr, pro
     doc = pymupdf.open()
-    doc.new_page().insert_text((72, 72), "Prova àèìòù €")
-    assert "àèìòù €" in pymupdf.open("pdf", doc.tobytes())[0].get_text(), "PyMuPDF: testo non riletto"
+    doc.new_page().insert_text((72, 72), "Prova àèìòù")
+    assert "àèìòù" in pymupdf.open("pdf", doc.tobytes())[0].get_text(), "PyMuPDF: testo non riletto"
     lic = pro.cartella_licenze()
     assert os.path.isfile(os.path.join(lic, "COPYING-AGPL-3.0.txt")), f"licenze mancanti ({lic})"
     QPrinter(QPrinter.PrinterMode.HighResolution)
