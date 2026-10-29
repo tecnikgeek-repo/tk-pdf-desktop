@@ -29,6 +29,8 @@ def ocr_diretto():
     import glob
     pkg = [os.path.basename(os.path.dirname(p)) for p in glob.glob(os.path.join(os.path.dirname(HERE), "*", "ocr_linux.py"))][0]
     ocr_linux = __import__(pkg + ".ocr_linux", fromlist=["x"])
+    from PySide6.QtGui import QGuiApplication
+    _app = QGuiApplication.instance() or QGuiApplication([])  # noqa: F841 (normalizzazione dello sfondo con Qt)
     righe = ocr_linux.riconosci([os.path.join(HERE, "ocr-it.png")])[0]
     return "\n".join(" ".join(w[0] for w in r) for r in righe), [w for r in righe for w in r]
 
