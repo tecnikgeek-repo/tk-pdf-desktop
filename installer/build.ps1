@@ -72,7 +72,10 @@ Copy-Item 'run.py' $stage
 Robo 'licenze' "$stage\licenze" @()
 Copy-Item "$pyHome\LICENSE.txt" "$stage\licenze\Python-LICENSE.txt"   # Python + librerie incluse nel runtime
 $verCode = "import sys,ssl,sqlite3,importlib.metadata as m`nv=lambda n:m.version(n)`nwith open(sys.argv[1],'a',encoding='utf-8') as f:`n  f.write('\nVERSIONI ESATTE IN QUESTO PACCHETTO (Windows)\n')`n  f.write('Python %s\n%s\nSQLite %s\n' % (sys.version.split()[0], ssl.OPENSSL_VERSION, sqlite3.sqlite_version))`n  for n in ('pyside6_essentials','shiboken6','pymupdf','certifi'): f.write('%s %s\n' % (n, v(n)))"
-& '.venv\Scripts\python.exe' -c $verCode "$stage\licenze\COMPONENTI.txt"
+# Python di base + librerie del venv: Smart App Control blocca .venv\Scripts\python.exe (lanciatore non firmato)
+$env:PYTHONPATH = (Resolve-Path '.venv\Lib\site-packages').Path
+& "$pyHome\python.exe" -c $verCode "$stage\licenze\COMPONENTI.txt"
+Remove-Item Env:PYTHONPATH
 if ($LASTEXITCODE -ne 0) { throw 'Versioni dei componenti non scritte in COMPONENTI.txt' }
 
 # --- precompila i .py (avvio più rapido)
