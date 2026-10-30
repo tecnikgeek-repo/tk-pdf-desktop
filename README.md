@@ -5,11 +5,11 @@
 
 <br><br>
 
-<a href="https://pietrodefilippis.it/scarica-programma/tk-pdf/windows/"><img alt="Scarica per Windows" src="https://img.shields.io/badge/%E2%AC%87%20%20Windows-scarica%20gratis-0078D4?style=for-the-badge&logo=windows&logoColor=white"></a> &nbsp; <a href="https://pietrodefilippis.it/scarica-programma/tk-pdf/mac/"><img alt="Scarica per macOS" src="https://img.shields.io/badge/%E2%AC%87%20%20macOS-scarica%20gratis-111111?style=for-the-badge&logo=apple&logoColor=white"></a> &nbsp; <a href="https://pietrodefilippis.it/donazione/"><img alt="Offrimi un caffè" src="https://img.shields.io/badge/%E2%98%95%20%20Offrimi%20un%20caff%C3%A8-facoltativo-f59e0b?style=for-the-badge"></a>
+<a href="https://pietrodefilippis.it/scarica-programma/tk-pdf/windows/"><img alt="Scarica per Windows" src="https://img.shields.io/badge/%E2%AC%87%20%20Windows-scarica%20gratis-0078D4?style=for-the-badge&logo=windows&logoColor=white"></a> &nbsp; <a href="https://pietrodefilippis.it/scarica-programma/tk-pdf/mac/"><img alt="Scarica per macOS" src="https://img.shields.io/badge/%E2%AC%87%20%20macOS-scarica%20gratis-111111?style=for-the-badge&logo=apple&logoColor=white"></a> &nbsp; <a href="https://pietrodefilippis.it/scarica-programma/tk-pdf/linux/"><img alt="Scarica per Linux" src="https://img.shields.io/badge/%E2%AC%87%20%20Linux-scarica%20gratis-E95420?style=for-the-badge&logo=linux&logoColor=white"></a> &nbsp; <a href="https://pietrodefilippis.it/donazione/"><img alt="Offrimi un caffè" src="https://img.shields.io/badge/%E2%98%95%20%20Offrimi%20un%20caff%C3%A8-facoltativo-f59e0b?style=for-the-badge"></a>
 
 <br><br>
 
-<a href="COPYING"><img alt="Licenza AGPL-3.0" src="https://img.shields.io/badge/licenza-AGPL--3.0-16a34a?style=for-the-badge"></a> <img alt="Windows" src="https://img.shields.io/badge/Windows-10%20%C2%B7%2011-0078D4?style=for-the-badge&logo=windows&logoColor=white"> <img alt="macOS" src="https://img.shields.io/badge/macOS-Intel%20%C2%B7%20Apple%20Silicon-111111?style=for-the-badge&logo=apple&logoColor=white"> <img alt="Versione" src="https://img.shields.io/github/v/tag/tecnikgeek-repo/tk-pdf-desktop?label=versione&style=for-the-badge&color=e11d48"> <img alt="Zero pubblicità" src="https://img.shields.io/badge/pubblicit%C3%A0-zero-0f172a?style=for-the-badge">
+<a href="COPYING"><img alt="Licenza AGPL-3.0" src="https://img.shields.io/badge/licenza-AGPL--3.0-16a34a?style=for-the-badge"></a> <img alt="Windows" src="https://img.shields.io/badge/Windows-10%20%C2%B7%2011-0078D4?style=for-the-badge&logo=windows&logoColor=white"> <img alt="macOS" src="https://img.shields.io/badge/macOS-Intel%20%C2%B7%20Apple%20Silicon-111111?style=for-the-badge&logo=apple&logoColor=white"> <img alt="Linux" src="https://img.shields.io/badge/Linux-Ubuntu%2022.04%2B-E95420?style=for-the-badge&logo=linux&logoColor=white"> <img alt="Versione" src="https://img.shields.io/github/v/tag/tecnikgeek-repo/tk-pdf-desktop?label=versione&style=for-the-badge&color=e11d48"> <img alt="Zero pubblicità" src="https://img.shields.io/badge/pubblicit%C3%A0-zero-0f172a?style=for-the-badge">
 
 <br>
 
@@ -83,7 +83,7 @@ Password con cifratura AES-256, compressione in un file nuovo, foto di documenti
 
 ## 🔒 I tuoi dati
 
-tk-pdf lavora tutto sul tuo computer: i PDF non vengono mai caricati su internet, nemmeno per il riconoscimento del testo (usa quello di Windows o di macOS; su Linux è incluso nel programma).
+tk-pdf lavora tutto sul tuo computer: i PDF non vengono mai caricati su internet, nemmeno per il riconoscimento del testo (usa quello di Windows, di macOS o di Linux).
 
 | Resta sul tuo computer | Va in rete (e perché) |
 |---|---|
@@ -99,7 +99,7 @@ pubblicati dall'autore.
 
 - **Windows 10 / 11** — scarica l'installer `.exe` e avvialo. Non servono i permessi di amministratore.
 - **macOS** (Intel o Apple Silicon) — apri il `.dmg` e trascina l'app in *Applicazioni*. Al primo avvio: clic destro sull'app → *Apri*.
-- **Linux** (Ubuntu 22.04 o più recente, x86_64) — scarica il file `.AppImage`, rendilo eseguibile (*Proprietà* → *Esegui come programma*) e aprilo: si aggiunge da solo al menu delle applicazioni.
+- **Linux** (Ubuntu 22.04 o più recente, 64 bit) — scarica il file `.AppImage`, rendilo avviabile (*Proprietà → Esegui come programma*) e aprilo: si aggiunge da solo al menu delle applicazioni.
 
 Gli aggiornamenti arrivano da soli: quando esce una versione nuova il programma te lo propone.
 
@@ -118,7 +118,7 @@ python -m venv .venv
 
 Su macOS: `source .venv/bin/activate`, poi `pip install "pyside6-essentials==6.11.*" "pymupdf==1.28.*" certifi pyobjc-core pyobjc-framework-Vision` e `python run.py`.
 
-Pacchetti: Windows con `installer\build.ps1`, macOS con `mac/build_mac.sh`, Linux con `linux/build_linux.sh` (AppImage, Tesseract incluso).
+Pacchetti: Windows con `installer\build.ps1`, macOS con `mac/build_mac.sh`.
 
 </details>
 
