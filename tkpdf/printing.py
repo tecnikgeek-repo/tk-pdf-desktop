@@ -14,6 +14,7 @@ from PySide6.QtWidgets import (
     QProgressDialog, QPushButton, QRadioButton, QSizePolicy, QSpinBox, QVBoxLayout, QWidget,
 )
 
+from tkpdf.tk_licenza_qt import dentro_lo_schermo
 from tkpdf import APP_TITLE
 from tkpdf.dialogs import parse_ranges
 
@@ -125,7 +126,7 @@ class PrintDialog(QDialog):
     def __init__(self, parent, pdf, current_page, settings):
         super().__init__(parent)
         self.setWindowTitle(f"Stampa — {pdf.title()}")
-        self.resize(1080, 760)
+        dentro_lo_schermo(self, 1080, 760)
         self.pdf = pdf
         self.doc = pdf.doc
         self.doc_revision = pdf.revision

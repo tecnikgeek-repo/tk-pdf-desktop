@@ -2,9 +2,11 @@
 # Uso:  powershell -ExecutionPolicy Bypass -File release\publish.ps1 -Notes "Novità 1|Novità 2"
 # Prerequisiti: VERSION alzata in tkpdf\__init__.py, commit fatto (lo script fa push e attende le build Mac e Linux).
 # -SkipMac: solo Windows (niente build su GitHub, manifest senza chiavi mac/linux).
+# -SenzaGitHub: commit e tag già inviati e file Mac/Linux già in dist\mac-<versione> (via SSH il PC non ha le credenziali di GitHub).
 param(
     [Parameter(Mandatory = $true)][string]$Notes,
-    [switch]$SkipMac
+    [switch]$SkipMac,
+    [switch]$SenzaGitHub
 )
 $ErrorActionPreference = 'Stop'
 $root = Split-Path $PSScriptRoot -Parent
@@ -44,6 +46,7 @@ if (-not (Test-Path $winInstall)) { throw "Manca ${winInstall} - rilancia instal
 $assets = @(@{ key = 'windows'; file = (Resolve-Path $winExe).Path }, @{ key = 'windows-zip'; file = (Resolve-Path $winZip).Path }, @{ key = 'windows-install'; file = (Resolve-Path $winInstall).Path })
 if (-not $SkipMac) {
     if (git status --porcelain) { throw 'Ci sono modifiche non committate: fai commit prima di pubblicare' }
+    if (-not $SenzaGitHub) {
     git push -q
     if ($LASTEXITCODE -ne 0) { throw 'git push non riuscito' }
     # tag della versione: è il «codice sorgente di questa versione» linkato da Informazioni → Licenze
@@ -75,17 +78,22 @@ if (-not $SkipMac) {
         gh run watch $runs[$wf] --repo $repo --exit-status | Out-Null
         if ($LASTEXITCODE -ne 0) { throw "$wf fallita: https://github.com/$repo/actions/runs/$($runs[$wf])" }
     }
+    }
     $macDir = "dist\mac-$version"
+    if (-not $SenzaGitHub) {
     if (Test-Path $macDir) { Remove-Item $macDir -Recurse -Force }
     gh run download $runs['build-mac.yml'] --repo $repo --dir $macDir --pattern 'tk-pdf-mac-*'
+    }
     foreach ($arch in 'arm64', 'x86_64') {
         $dmg = Get-ChildItem $macDir -Recurse -Filter "tk-pdf-$version-mac-$arch.dmg" | Select-Object -First 1
         if (-not $dmg) { throw "Manca il dmg $arch" }
         $assets += @{ key = "mac-$arch"; file = $dmg.FullName }
     }
     # Linux: la build mette l'AppImage nella release v<versione> del repo
+    if (-not $SenzaGitHub) {
     gh release download "v$version" --repo $repo --dir $macDir --pattern '*.AppImage' --clobber
     if ($LASTEXITCODE -ne 0) { throw "Download dell'AppImage dalla release v$version fallito" }
+    }
     $appImage = Join-Path $macDir "tk-pdf-$version-linux-x86_64.AppImage"
     if (-not (Test-Path $appImage)) { throw "Manca l'AppImage Linux" }
     $assets += @{ key = 'linux-x86_64'; file = (Resolve-Path $appImage).Path }

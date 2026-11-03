@@ -16,6 +16,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout, QWidget,
 )
 
+from tkpdf.tk_licenza_qt import dentro_lo_schermo
 from tkpdf import APP_TITLE
 
 PHOTO_EXT = (".jpg", ".jpeg", ".png", ".webp", ".bmp", ".tif", ".tiff", ".heic", ".heif")
@@ -683,7 +684,7 @@ class ScanDialog(QDialog):
         super().__init__(parent)
         self.setWindowTitle("Da foto a PDF")
         self.setAcceptDrops(True)
-        self.resize(1180, 780)
+        dentro_lo_schermo(self, 1180, 780)
         self.start_dir = start_dir
         self.settings = settings
         self.pdf_bytes = None
