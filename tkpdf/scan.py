@@ -2,6 +2,7 @@
 
 Solo Qt (niente OpenCV/numpy): il rilevamento dei bordi lavora su una copia ridotta della foto,
 raddrizzamento e filtri usano QTransform/QPainter (codice C di Qt, veloce anche su foto da 12 MP)."""
+from tkpdf.errori import frase_errore
 import math
 import os
 
@@ -1057,7 +1058,7 @@ class ScanDialog(QDialog):
             data = build_pdf(self.pages, self.page_size.currentData(), self.quality.currentIndex(), step,
                              editable=self.made_editable)
         except Exception as exc:
-            QMessageBox.critical(self, APP_TITLE, f"Creazione del PDF non riuscita:\n{exc}")
+            QMessageBox.critical(self, APP_TITLE, frase_errore("Creazione del PDF non riuscita.", exc))
             return
         finally:
             QApplication.restoreOverrideCursor()

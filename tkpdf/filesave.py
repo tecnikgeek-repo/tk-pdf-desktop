@@ -194,7 +194,7 @@ def _diagnose(path, exc):
                              "Usa «Salva con nome».")
         return SaveError("Windows nega la modifica di questo file: i permessi non lo consentono oppure "
                          "un antivirus lo sta proteggendo.")
-    return SaveError(f"Il file non può essere sostituito adesso ({exc}).\n"
+    return SaveError("Il file non può essere sostituito adesso.\n"
                      "Riprova tra qualche secondo oppure usa «Salva con nome».")
 
 
@@ -219,7 +219,7 @@ def write_file(path, data, allow_read_only=False):
         if not os.access(folder, os.W_OK):
             raise SaveError(f"Non hai i permessi per scrivere nella cartella:\n{folder}\n\n"
                             "Usa «Salva con nome» e scegli un'altra cartella.", can_retry=False) from exc
-        raise SaveError(f"Impossibile scrivere il file:\n{exc}") from exc
+        raise SaveError("Impossibile scrivere il file: controlla che non sia aperto in un altro programma e riprova.") from exc
 
     _hydrate(path)
     last = None

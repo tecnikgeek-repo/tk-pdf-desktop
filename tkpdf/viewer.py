@@ -1,4 +1,5 @@
 """Vista continua delle pagine PDF con strumenti di annotazione e modifica."""
+from tkpdf.errori import frase_errore
 import math
 import time
 from bisect import bisect_right
@@ -1167,7 +1168,7 @@ class PdfView(QGraphicsView):
                 else:
                     self.move_line(pno, d["line"], delta)
         except Exception as exc:
-            QMessageBox.warning(self, APP_TITLE, f"Operazione non riuscita:\n{exc}")
+            QMessageBox.warning(self, APP_TITLE, frase_errore("Operazione non riuscita.", exc))
         if pno < len(self.pages):
             self.pages[pno].update()
 
@@ -1674,7 +1675,7 @@ class PdfView(QGraphicsView):
         try:
             menu.exec(e.globalPos())
         except Exception as exc:
-            QMessageBox.warning(self, APP_TITLE, f"Operazione non riuscita:\n{exc}")
+            QMessageBox.warning(self, APP_TITLE, frase_errore("Operazione non riuscita.", exc))
 
     def _follow_link(self, link):
         kind = link.get("kind")
@@ -1833,7 +1834,7 @@ class PdfView(QGraphicsView):
                         ww.field_value = text
                         ww.update()
             except Exception as exc:
-                QMessageBox.warning(self, APP_TITLE, f"Impossibile compilare il campo:\n{exc}")
+                QMessageBox.warning(self, APP_TITLE, frase_errore("Impossibile compilare il campo.", exc))
 
     def _next_field(self, pno, xref, step):
         fields = []

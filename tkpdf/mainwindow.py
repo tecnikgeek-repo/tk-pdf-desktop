@@ -1,4 +1,5 @@
 """Finestra principale di tk-pdf."""
+from tkpdf.errori import frase_errore
 import os
 import sys
 
@@ -818,7 +819,7 @@ class MainWindow(QMainWindow):
                 password = dlg.password()
             except Exception as exc:
                 QApplication.restoreOverrideCursor()
-                QMessageBox.critical(self, APP_TITLE, f"Impossibile aprire il file:\n{exc}")
+                QMessageBox.critical(self, APP_TITLE, frase_errore("Impossibile aprire il file.", exc))
                 return
             finally:
                 if QApplication.overrideCursor():
@@ -962,7 +963,7 @@ class MainWindow(QMainWindow):
             return False
         except (SaveError, PermissionError) as exc:
             QApplication.restoreOverrideCursor()
-            err = exc if isinstance(exc, SaveError) else SaveError(f"Impossibile salvare il file:\n{exc}")
+            err = exc if isinstance(exc, SaveError) else SaveError(frase_errore("Impossibile salvare il file.", exc))
             # il file esistente è protetto, ma creare un file nuovo di solito si può
             if allow_copy:
                 if not self._save_copy(path, password, err):
@@ -973,7 +974,7 @@ class MainWindow(QMainWindow):
                 return True
             return self._save_failed(err, path, password)
         except Exception as exc:
-            QMessageBox.critical(self, APP_TITLE, f"Errore durante il salvataggio:\n{exc}")
+            QMessageBox.critical(self, APP_TITLE, frase_errore("Errore durante il salvataggio.", exc))
             return False
         finally:
             QApplication.restoreOverrideCursor()
@@ -990,7 +991,7 @@ class MainWindow(QMainWindow):
         except Exception as exc:
             QApplication.restoreOverrideCursor()
             if not isinstance(err, SaveError):
-                err = exc if isinstance(exc, SaveError) else SaveError(f"Impossibile salvare il file:\n{exc}")
+                err = exc if isinstance(exc, SaveError) else SaveError(frase_errore("Impossibile salvare il file.", exc))
             self._save_failed(err, path, password)
             return False
         QApplication.restoreOverrideCursor()
@@ -1077,7 +1078,7 @@ class MainWindow(QMainWindow):
             from tkpdf.winreg_assoc import register
             register()
         except Exception as exc:
-            QMessageBox.warning(self, APP_TITLE, f"Registrazione non riuscita:\n{exc}")
+            QMessageBox.warning(self, APP_TITLE, frase_errore("Registrazione non riuscita.", exc))
             return
         QMessageBox.information(self, APP_TITLE,
                                 "tk-pdf è registrato per i file PDF.\n\nNella finestra che si apre clicca su «.pdf» "
@@ -1402,7 +1403,7 @@ class MainWindow(QMainWindow):
                 self.view.reset_position()
                 self.pdf.new_from_bytes(merged)
         except Exception as exc:
-            QMessageBox.critical(self, APP_TITLE, f"Unione non riuscita:\n{exc}")
+            QMessageBox.critical(self, APP_TITLE, frase_errore("Unione non riuscita.", exc))
             return
         finally:
             QApplication.restoreOverrideCursor()
@@ -1459,7 +1460,7 @@ class MainWindow(QMainWindow):
         try:
             self.pdf.save_pages_as(pages, path)
         except Exception as exc:
-            QMessageBox.critical(self, APP_TITLE, f"Estrazione non riuscita:\n{exc}")
+            QMessageBox.critical(self, APP_TITLE, frase_errore("Estrazione non riuscita.", exc))
             return
         lock = " · protetto con la stessa password dell'originale" if self.pdf.password else ""
         self.show_message(f"📤 Estratte {len(pages)} pagine in {os.path.basename(path)}{lock}")
@@ -1488,7 +1489,7 @@ class MainWindow(QMainWindow):
             for g, target in targets:
                 self.pdf.save_pages_as(g, target)
         except Exception as exc:
-            QMessageBox.critical(self, APP_TITLE, f"Divisione non riuscita:\n{exc}")
+            QMessageBox.critical(self, APP_TITLE, frase_errore("Divisione non riuscita.", exc))
             return
         finally:
             QApplication.restoreOverrideCursor()
@@ -1522,7 +1523,7 @@ class MainWindow(QMainWindow):
                                use_objstms=1)
             tmp.close()
         except Exception as exc:
-            QMessageBox.critical(self, APP_TITLE, f"Compressione non riuscita:\n{exc}")
+            QMessageBox.critical(self, APP_TITLE, frase_errore("Compressione non riuscita.", exc))
             return
         finally:
             QApplication.restoreOverrideCursor()

@@ -1,4 +1,5 @@
 """Interfaccia degli aggiornamenti: controllo in background e finestra di aggiornamento."""
+from tkpdf.errori import motivo_errore
 import html
 import os
 import time
@@ -27,7 +28,7 @@ class CheckThread(QThread):
         try:
             self.checked.emit(fetch_manifest(self.url), "")
         except Exception as exc:
-            self.checked.emit(None, str(exc))
+            self.checked.emit(None, motivo_errore(exc))
 
 
 # barra di avanzamento ben visibile: binario grigio chiaro, riempimento nel colore di tk-pdf
@@ -56,7 +57,7 @@ class DownloadThread(QThread):
         except InterruptedError:
             self.failed.emit("")
         except Exception as exc:
-            self.failed.emit(str(exc))
+            self.failed.emit(motivo_errore(exc))
 
 
 class UpdateDialog(QDialog):
@@ -162,7 +163,7 @@ class UpdateDialog(QDialog):
         try:
             apply_update(path, new_version=self.manifest["version"])
         except Exception as exc:
-            self._failed(str(exc))
+            self._failed(motivo_errore(exc))
             return
         self.window.closing_for_update = True
         QTimer.singleShot(300, QApplication.instance().quit)

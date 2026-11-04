@@ -2,6 +2,7 @@
 
 Evita i blocchi di antivirus (Avast CyberCapture) e Smart App Control sugli exe non firmati.
 """
+from tkpdf.errori import motivo_errore
 import ctypes
 import os
 import shutil
@@ -403,7 +404,7 @@ def run(argv):
                 install(dest, desktop, lambda p, s: bridge.progress.emit(p, s))
                 bridge.finished.emit(dest)
             except Exception as exc:
-                bridge.failed.emit(str(exc))
+                bridge.failed.emit(motivo_errore(exc))
 
         threading.Thread(target=work, daemon=True).start()
 

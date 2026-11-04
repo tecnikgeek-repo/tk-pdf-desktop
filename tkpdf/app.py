@@ -77,7 +77,7 @@ def _install_excepthook():
         except OSError:
             pass
         if QApplication.instance() is not None:
-            QMessageBox.warning(None, APP_TITLE, f"Si è verificato un errore imprevisto:\n\n{exc}\n\n"
+            QMessageBox.warning(None, APP_TITLE, "Si è verificato un errore imprevisto.\n\n"
                                                  "Il dettaglio è stato salvato in errori.log.")
         else:
             sys.__excepthook__(exc_type, exc, tb)
