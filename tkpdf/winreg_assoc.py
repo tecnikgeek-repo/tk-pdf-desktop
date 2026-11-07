@@ -7,7 +7,7 @@ APP_NAME = "tk-pdf"
 CAPS_KEY = r"Software\TecnikGeek\tk-pdf\Capabilities"
 STATE_KEY = r"Software\TecnikGeek\tk-pdf"
 # alzare quando cambia cosa viene scritto nel registro: all'avvio l'app si ri-registra da sola
-SCHEMA = "5"  # 3: tk-pdf.exe · 4: nome tkPDF · 5: nome tk-pdf
+SCHEMA = "6"  # 3: tk-pdf.exe · 4: nome tkPDF · 5: nome tk-pdf · 6: icona piccola sulle miniature
 OLD_APP_NAMES = ("TK PDF", "tkPDF")  # nomi con cui le versioni precedenti si registravano in «App predefinite»
 # copia identica di pythonw.exe con il nome dell'app (1.0.16): stesso file, Smart App Control lo accetta
 EXE_NAME = "tk-pdf.exe"
@@ -59,6 +59,9 @@ def register():
     _set(winreg, base, "", "Documento PDF")
     _set(winreg, base, "FriendlyTypeName", "Documento PDF")
     _set(winreg, rf"{base}\DefaultIcon", "", icon_ref)
+    # icona piccola nell'angolo delle miniature di Esplora file: senza, Windows mette quella di Python
+    # (tk-pdf.exe è una copia di pythonw.exe)
+    _set(winreg, base, "TypeOverlay", icon_ref)
     # nome e icona dell'app in «Apri con» (altrimenti Windows mostra «Python»)
     _set(winreg, rf"{base}\shell\open", "FriendlyAppName", APP_NAME)
     _set(winreg, rf"{base}\shell\open\command", "", command)
