@@ -29,9 +29,8 @@ try {
     }
 } catch [System.Net.WebException] { Write-Host "   nessun manifest precedente (prima pubblicazione)" }
 
-# --- installer Windows
-$winExe = "dist\tk-pdf-setup-$version.exe"
-if (-not (Test-Path $winExe) -or -not (Test-Path "dist\tk-pdf-$version-windows.zip")) {
+# --- pacchetti Windows
+if (-not (Test-Path "dist\tk-pdf-$version-installa.zip") -or -not (Test-Path "dist\tk-pdf-$version-windows.zip")) {
     & powershell -NoProfile -ExecutionPolicy Bypass -File installer\build.ps1
     if ($LASTEXITCODE -ne 0) { throw 'Build Windows fallita' }
 }
@@ -39,11 +38,12 @@ if (-not (Test-Path $winExe) -or -not (Test-Path "dist\tk-pdf-$version-windows.z
 # --- dmg macOS dalla build GitHub del commit corrente
 $winZip = "dist\tk-pdf-$version-windows.zip"
 if (-not (Test-Path $winZip)) { throw "Manca ${winZip} - rilancia installer\build.ps1" }
-# 'windows' = installer exe (nuove installazioni e versioni <= 1.0.5), 'windows-zip' = aggiornamento senza exe
+# 'windows-zip' = aggiornamento automatico (senza exe)
 $winInstall = "dist\tk-pdf-$version-installa.zip"
 if (-not (Test-Path $winInstall)) { throw "Manca ${winInstall} - rilancia installer\build.ps1" }
-# 'windows-install' = ZIP di installazione senza exe (per PC con antivirus o Smart App Control)
-$assets = @(@{ key = 'windows'; file = (Resolve-Path $winExe).Path }, @{ key = 'windows-zip'; file = (Resolve-Path $winZip).Path }, @{ key = 'windows-install'; file = (Resolve-Path $winInstall).Path })
+# 'windows-install' = ZIP di installazione: download «Windows» della vetrina e file della cartella Windows di Dropbox.
+# Niente più setup.exe ('windows'): Controllo intelligente delle app lo blocca
+$assets = @(@{ key = 'windows-zip'; file = (Resolve-Path $winZip).Path }, @{ key = 'windows-install'; file = (Resolve-Path $winInstall).Path })
 if (-not $SkipMac) {
     if (git status --porcelain) { throw 'Ci sono modifiche non committate: fai commit prima di pubblicare' }
     if (-not $SenzaGitHub) {
@@ -148,13 +148,15 @@ foreach ($a in $assets) {
 }
 Write-Host "   manifest e file online verificati"
 
-# --- cartella Dropbox
-New-Item -ItemType Directory -Force "$dropbox\installer\Windows", "$dropbox\installer\Mac", "$dropbox\installer\Linux" | Out-Null
-Get-ChildItem "$dropbox\installer" -Recurse -File | Where-Object { $_.Name -notlike "*$version*" } | Remove-Item -Force
-foreach ($a in $assets) {
-    if ($a.key -eq 'windows-zip') { continue }
-    $sub = if ($a.key -like 'windows*') { 'Windows' } elseif ($a.key -like 'linux-*') { 'Linux' } else { 'Mac' }
-    Copy-Item $a.file "$dropbox\installer\$sub\" -Force
+# --- cartella Dropbox: Windows (ZIP di installazione), Mac (dmg) e Linux (AppImage), solo l'ultima versione
+New-Item -ItemType Directory -Force "$dropbox\Windows", "$dropbox\Mac", "$dropbox\Linux" | Out-Null
+if (Test-Path "$dropbox\installer") { Remove-Item "$dropbox\installer" -Recurse -Force }  # struttura vecchia
+Get-ChildItem "$dropbox\Windows" -File | Remove-Item -Force
+Copy-Item $winInstall "$dropbox\Windows\tk-pdf-$version-windows.zip" -Force
+if (-not $SkipMac) {
+    Get-ChildItem "$dropbox\Mac", "$dropbox\Linux" -File | Remove-Item -Force
+    foreach ($a in $assets | Where-Object { $_.key -like 'mac-*' }) { Copy-Item $a.file "$dropbox\Mac\" -Force }
+    foreach ($a in $assets | Where-Object { $_.key -like 'linux-*' }) { Copy-Item $a.file "$dropbox\Linux\" -Force }
 }
 & robocopy $root "$dropbox\progetto" /MIR /NFL /NDL /NJH /NJS /NP /XD .venv .venv-mac .venv-linux build dist __pycache__ .git `
     /XF tk-pdf.exe *.pyc lavoro.pdf risultato.pdf protetto.pdf selftest*.png diag.png | Out-Null

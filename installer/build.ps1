@@ -1,11 +1,11 @@
-﻿# Crea l'installer autonomo dist\tk-pdf-setup-<versione>.exe
+﻿# Crea dist\tk-pdf-<versione>-windows.zip (aggiornamento) e dist\tk-pdf-<versione>-installa.zip (installazione
+# senza exe: Controllo intelligente delle app di Windows blocca i setup.exe nuovi e non firmati)
 # Contiene: runtime Python ridotto + PySide6 (solo moduli usati) + PyMuPDF + tk-pdf + lanciatore + licenze\.
 $ErrorActionPreference = 'Stop'
 $root = Split-Path $PSScriptRoot -Parent
 Set-Location $root
 
 $version = (Select-String -Path 'tkpdf\__init__.py' -Pattern 'VERSION = "(.+)"').Matches[0].Groups[1].Value
-$csc = "$env:WINDIR\Microsoft.NET\Framework64\v4.0.30319\csc.exe"
 $stageRoot = Join-Path $env:TEMP 'tkpdf-stage'
 $stage = Join-Path $stageRoot 'app'
 $dist = Join-Path $root 'dist'
@@ -117,9 +117,6 @@ Remove-Item $ocrOut
 Write-Host "   test OCR OK"
 
 # --- pacchetto
-$payload = Join-Path $stageRoot 'payload.zip'
-Add-Type -AssemblyName System.IO.Compression.FileSystem
-[System.IO.Compression.ZipFile]::CreateFromDirectory($stage, $payload, [System.IO.Compression.CompressionLevel]::Optimal, $false)
 $sizeKb = [int]((Get-ChildItem $stage -Recurse -File | Measure-Object Length -Sum).Sum / 1KB)
 
 # --- pacchetto di aggiornamento Windows (lo estrae tar.exe di sistema: percorsi con /)
@@ -141,19 +138,7 @@ $installZip = Join-Path $dist "tk-pdf-$version-installa.zip"
 & "$pyHome\python.exe" -c $zipCode $installRoot $installZip
 if ($LASTEXITCODE -ne 0) { throw 'Creazione ZIP di installazione fallita' }
 
-$setupSrc = Get-Content "$PSScriptRoot\setup.cs" -Raw -Encoding UTF8
-$setupSrc = $setupSrc.Replace('@@VERSION@@', $version).Replace('@@SIZEKB@@', "$sizeKb")
-$genSrc = Join-Path $stageRoot 'setup.cs'
-Set-Content $genSrc $setupSrc -Encoding utf8
-
-$out = Join-Path $dist "tk-pdf-setup-$version.exe"
-& $csc /nologo /optimize+ /target:winexe /platform:anycpu `
-    /win32icon:"$root\assets\tk-pdf.ico" `
-    /reference:System.Windows.Forms.dll /reference:System.Drawing.dll /reference:System.Core.dll `
-    /reference:System.IO.Compression.dll /reference:System.IO.Compression.FileSystem.dll `
-    /resource:"$payload",payload.zip /out:"$out" $genSrc
-if ($LASTEXITCODE -ne 0) { throw 'Compilazione installer fallita' }
 
 Remove-Item $stageRoot -Recurse -Force
-$mb = [math]::Round((Get-Item $out).Length / 1MB, 1)
-Write-Host "== Creato $out ($mb MB, installato $([math]::Round($sizeKb/1024)) MB)"
+$mb = [math]::Round((Get-Item $installZip).Length / 1MB, 1)
+Write-Host "== Creato $installZip ($mb MB, installato $([math]::Round($sizeKb/1024)) MB)"
