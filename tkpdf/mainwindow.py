@@ -101,7 +101,8 @@ class MainWindow(QMainWindow):
         self._build_shortcuts()
         self._connect()
         # su finestre strette la testata mostra solo le icone; e la finestra non esce mai dallo schermo (MacBook)
-        testata_compatta(self, [(b, corto) for b, _intero, corto in self._wide_buttons], 1380)
+        testata_compatta(self, [(b, corto) for b, _intero, corto in self._wide_buttons], 1380,
+                         nascondi=[self._hdr_title, self._zoom_meno, self._zoom_piu, self._pag_prec, self._pag_succ], soglia_minima=1000)
         geo = self.settings.value("geometry")
         if geo is not None:
             self.restoreGeometry(geo)
@@ -135,7 +136,10 @@ class MainWindow(QMainWindow):
         ic.setPixmap(self.icon.pixmap(34, 34))
         h.addWidget(ic)
         h.addSpacing(6)
-        col = QVBoxLayout()
+        # nome e versione in un contenitore: sulle finestre molto strette si nasconde (testata_compatta)
+        self._hdr_title = QWidget()
+        col = QVBoxLayout(self._hdr_title)
+        col.setContentsMargins(0, 0, 18, 0)
         col.setSpacing(0)
         title = QLabel(APP_TITLE)
         title.setObjectName("tkHeaderTitle")
@@ -143,8 +147,7 @@ class MainWindow(QMainWindow):
         self.file_label.setObjectName("tkHeaderFile")
         col.addWidget(title)
         col.addWidget(self.file_label)
-        h.addLayout(col)
-        h.addSpacing(18)
+        h.addWidget(self._hdr_title)
 
         b_apri = self._hbtn("📂 Apri", "Apri un PDF (Ctrl+O)", self.open_dialog, doc_only=False)
         self._wide_buttons.append((b_apri, "📂 Apri", "📂"))
@@ -171,7 +174,7 @@ class MainWindow(QMainWindow):
         h.addStretch(1)
 
         # ‹ › invece di ◀ ▶: su Windows questi ultimi vengono disegnati come emoji blu
-        prev_btn = self._hbtn("‹", "Pagina precedente", lambda: self.view.go_to_page(self.view.current_page() - 1))
+        self._pag_prec = prev_btn = self._hbtn("‹", "Pagina precedente", lambda: self.view.go_to_page(self.view.current_page() - 1))
         prev_btn.setStyleSheet("QToolButton { font-size: 22px; padding: 0 10px 3px 10px; }")
         h.addWidget(prev_btn)
         self.page_edit = QLineEdit()
@@ -183,12 +186,13 @@ class MainWindow(QMainWindow):
         self.page_total = QLabel("/ 0")
         self.page_total.setStyleSheet("color:#cbd5e1; padding: 0 4px;")
         h.addWidget(self.page_total)
-        next_btn = self._hbtn("›", "Pagina successiva", lambda: self.view.go_to_page(self.view.current_page() + 1))
+        self._pag_succ = next_btn = self._hbtn("›", "Pagina successiva", lambda: self.view.go_to_page(self.view.current_page() + 1))
         next_btn.setStyleSheet("QToolButton { font-size: 22px; padding: 0 10px 3px 10px; }")
         h.addWidget(next_btn)
         h.addSpacing(10)
 
-        h.addWidget(self._hbtn("−", "Riduci (Ctrl+-)", lambda: self.view.set_zoom(self.view.zoom / 1.2)))
+        self._zoom_meno = self._hbtn("−", "Riduci (Ctrl+-)", lambda: self.view.set_zoom(self.view.zoom / 1.2))
+        h.addWidget(self._zoom_meno)
         self.zoom_combo = QComboBox()
         self.zoom_combo.setEditable(True)
         self.zoom_combo.addItems([FIT_WIDTH, FIT_PAGE] + ZOOM_PRESETS)
@@ -197,7 +201,8 @@ class MainWindow(QMainWindow):
         self.zoom_combo.textActivated.connect(self._zoom_from_combo)
         self._doc_actions.append(self.zoom_combo)
         h.addWidget(self.zoom_combo)
-        h.addWidget(self._hbtn("+", "Ingrandisci (Ctrl++)", lambda: self.view.set_zoom(self.view.zoom * 1.2)))
+        self._zoom_piu = self._hbtn("+", "Ingrandisci (Ctrl++)", lambda: self.view.set_zoom(self.view.zoom * 1.2))
+        h.addWidget(self._zoom_piu)
         h.addSpacing(10)
         h.addWidget(self._hbtn("🔍", "Cerca nel documento (Ctrl+F)", self.show_search))
         self.btn_update = self._hbtn("⬆️ Aggiorna", "È disponibile una nuova versione di tk-pdf",
@@ -471,7 +476,15 @@ class MainWindow(QMainWindow):
         row.addStretch(1)
         outer.addLayout(row)
         outer.addStretch(2)
-        return w
+        # dentro un'area scorrevole: su schermi bassi (portatili, ridimensionamento di Windows al 125-150%)
+        # la scheda di benvenuto non deve imporre l'altezza minima della finestra
+        area = QScrollArea()
+        area.setWidget(w)
+        area.setWidgetResizable(True)
+        area.setFrameShape(QFrame.Shape.NoFrame)
+        area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        area.setMinimumHeight(120)
+        return area
 
     def _build_doc_area(self):
         w = QWidget()

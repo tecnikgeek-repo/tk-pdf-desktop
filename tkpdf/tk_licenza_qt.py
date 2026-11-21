@@ -30,7 +30,7 @@ import sys
 import threading
 import time
 
-from PySide6.QtCore import QEvent, QObject, Qt, QTimer, QUrl, Signal
+from PySide6.QtCore import QEvent, QObject, QSize, Qt, QTimer, QUrl, Signal
 from PySide6.QtGui import QColor, QDesktopServices, QFont, QGuiApplication
 from PySide6.QtWidgets import (QDialog, QFrame, QGridLayout, QHBoxLayout, QLabel, QLineEdit, QMessageBox,
                                QPushButton, QScrollArea, QSizePolicy, QVBoxLayout, QWidget)
@@ -612,25 +612,85 @@ class ProDialog(QDialog):
         self._ponti.append(_in_sottofondo(lambda: (self.lic.disattiva(), (True, ""))[1], lambda ok, msg: self._disegna()))
 
 
+def _cornice(win):
+    """Spazio di barra del titolo e bordi. Prima di show() Qt non lo conosce: si usa una stima prudente."""
+    fg, g = win.frameGeometry(), win.geometry()
+    cx, cy = fg.width() - g.width(), fg.height() - g.height()
+    if cy <= 0:
+        cx, cy = 16, 40
+    return cx, cy
+
+
 def dentro_lo_schermo(win, larghezza=None, altezza=None):
     """Misura e posizione della finestra principale sempre dentro lo schermo (MacBook e portatili piccoli).
     Da chiamare al posto di resize() e dopo restoreGeometry(): una misura salvata su uno schermo più grande
-    non deve far uscire la finestra (bordi irraggiungibili, pulsanti tagliati)."""
+    non deve far uscire la finestra (bordi irraggiungibili, pulsanti tagliati). Conta anche la barra del titolo,
+    compatta la testata PRIMA di ridimensionare (altrimenti Qt si ferma al minimo della testata col testo intero)
+    e ricontrolla tutto appena la finestra compare (schermi piccoli con ridimensionamento di Windows al 125-150%)."""
     from PySide6.QtCore import QRect
     schermo = win.screen() or QGuiApplication.primaryScreen()
     geo = schermo.availableGeometry()
-    w = min(larghezza or win.width(), int(geo.width() * 0.94))
-    h = min(altezza or win.height(), int(geo.height() * 0.92))
+    cx, cy = _cornice(win)
+    w = min(larghezza or win.width(), int(geo.width() * 0.94), geo.width() - cx)
+    h = min(altezza or win.height(), int(geo.height() * 0.92), geo.height() - cy)
+    tc = getattr(win, "_tk_testata_compatta", None)
+    if tc is not None:
+        tc.aggiorna(w)
     win.resize(max(w, win.minimumWidth()), max(h, win.minimumHeight()))
-    if not geo.contains(QRect(win.pos(), win.size())):
-        win.move(geo.left() + max(0, (geo.width() - win.width()) // 2),
-                 geo.top() + max(0, (geo.height() - win.height()) // 2))
+    if not geo.contains(QRect(win.pos(), win.size() + QSize(cx, cy))):
+        win.move(geo.left() + max(0, (geo.width() - win.width() - cx) // 2),
+                 geo.top() + max(0, (geo.height() - win.height() - cy) // 2))
+    if getattr(win, "_tk_rientro", None) is None:
+        win._tk_rientro = _Rientro(win)
+
+
+def rientra_nello_schermo(win):
+    """Finestra già visibile: se la cornice esce dallo schermo la stringe e la sposta dentro;
+    se non ci sta nemmeno al minimo la ingrandisce (Windows la adatta allo spazio libero)."""
+    if win.isMaximized() or win.isFullScreen() or not win.isVisible():
+        return
+    schermo = win.screen() or QGuiApplication.primaryScreen()
+    geo = schermo.availableGeometry()
+    if geo.contains(win.frameGeometry()):
+        return
+    cx, cy = _cornice(win)
+    w = min(win.width(), geo.width() - cx)
+    h = min(win.height(), geo.height() - cy)
+    tc = getattr(win, "_tk_testata_compatta", None)
+    if tc is not None:
+        tc.aggiorna(w)
+    win.resize(w, h)
+    fg = win.frameGeometry()
+    x = max(geo.left(), min(fg.x(), geo.right() + 1 - fg.width()))
+    y = max(geo.top(), min(fg.y(), geo.bottom() + 1 - fg.height()))
+    win.move(x, y)
+    fg = win.frameGeometry()
+    if fg.width() > geo.width() or fg.height() > geo.height():
+        win.showMaximized()
+
+
+class _Rientro(QObject):
+    """Ricontrolla la finestra quando compare e quando passa su un altro schermo."""
+    def __init__(self, win):
+        super().__init__(win)
+        self.win, self._collegato = win, False
+        win.installEventFilter(self)
+
+    def eventFilter(self, obj, ev):
+        if obj is self.win and ev.type() == QEvent.Type.Show:
+            QTimer.singleShot(0, lambda: rientra_nello_schermo(self.win))
+            if not self._collegato and self.win.windowHandle() is not None:
+                self._collegato = True
+                self.win.windowHandle().screenChanged.connect(
+                    lambda _s: QTimer.singleShot(0, lambda: rientra_nello_schermo(self.win)))
+        return False
 
 
 class _TestataCompatta(QObject):
-    def __init__(self, win, voci, soglia):
+    def __init__(self, win, voci, soglia, nascondi=(), soglia_minima=0):
         super().__init__(win)
         self.win, self.soglia, self.compatta = win, soglia, None
+        self.nascondi, self.soglia_minima, self.minima = list(nascondi), soglia_minima, None
         self.voci = [(b, b.text(), corto) for b, corto in voci]
         for b, pieno, _ in self.voci:
             if not b.toolTip():
@@ -640,12 +700,17 @@ class _TestataCompatta(QObject):
         self.aggiorna(min(win.width(), int(geo.width() * 0.94)))
 
     def aggiorna(self, larghezza=None):
-        c = (larghezza or self.win.width()) < self.soglia
-        if c == self.compatta:
-            return
-        self.compatta = c
-        for b, pieno, corto in self.voci:
-            b.setText(corto if c else pieno)
+        larghezza = larghezza or self.win.width()
+        c = larghezza < self.soglia
+        if c != self.compatta:
+            self.compatta = c
+            for b, pieno, corto in self.voci:
+                b.setText(corto if c else pieno)
+        m = bool(self.nascondi) and larghezza < self.soglia_minima
+        if m != self.minima:
+            self.minima = m
+            for wd in self.nascondi:
+                wd.setVisible(not m)
 
     def eventFilter(self, obj, ev):
         if obj is self.win and ev.type() == QEvent.Type.Resize:
@@ -653,12 +718,14 @@ class _TestataCompatta(QObject):
         return False
 
 
-def testata_compatta(win, voci, soglia):
+def testata_compatta(win, voci, soglia, nascondi=(), soglia_minima=0):
     """Sotto `soglia` px di larghezza i pulsanti della testata perdono il testo (resta l'icona, il testo va nel
     suggerimento): così la finestra si stringe anche su un MacBook. `voci` = [(pulsante, testo corto)], di solito
     «» per i pulsanti con l'icona. `soglia` va scelta più larga del minimo della finestra col testo intero.
+    Sotto `soglia_minima` (schermi piccoli o ridimensionati al 125-150%) si nascondono anche i widget di
+    `nascondi` (nome del programma, pulsanti doppi): la finestra deve sempre poter stare nello schermo.
     Da chiamare dopo aver costruito la testata e prima di dentro_lo_schermo()."""
-    win._tk_testata_compatta = _TestataCompatta(win, voci, soglia)
+    win._tk_testata_compatta = _TestataCompatta(win, voci, soglia, nascondi, soglia_minima)
     return win._tk_testata_compatta
 
 
